@@ -1,23 +1,15 @@
-package com.nitap.attende.Model;
-
-import com.ttv.face.FaceFeatureInfo;
+package com.nitap.attende.models;
 
 public class Student {
     public String rollno;
-    public String regno,year,sem;
-    public String name,degree,branch,section,email;
+    public String regno;
+    public String name,email;
     public String deviceHash;
     public String sectionId;
-    public FaceFeatureInfo faceFeatureInfo;
-    public Section sectionObject;
-    public FaceFeatureInfo getFaceFeatureInfo() {
-        return faceFeatureInfo;
-    }
+    public String faceFeatureInfoString;
 
-    public void setFaceFeatureInfo(FaceFeatureInfo faceFeatureInfo) {
-        this.faceFeatureInfo = faceFeatureInfo;
-    }
 
+    /*
     public Student() {}
     public Student(int i,String s,String[] arr,FaceFeatureInfo fInfo) {
         // regno = year = sem  = i;
@@ -58,7 +50,7 @@ public class Student {
         return courses;
     }*/
 
-
+/*
 
     public void setBranch(String branch) {
         this.branch = branch;
@@ -109,4 +101,6 @@ public class Student {
     public void setYear(String year) {
         this.year = year;
     }
+
+ */
 }

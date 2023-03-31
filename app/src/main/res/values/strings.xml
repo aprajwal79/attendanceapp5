@@ -13,6 +13,14 @@
         <item>PHD</item>
     </string-array>
 
+    <string-array name="my_dropdown_items">
+        <item>CS251</item>
+        <item>CS252</item>
+        <item>CS253</item>
+        <item>CS254</item>
+        <item>CS255</item>
+    </string-array>
+
     <string-array name="branches">
         <item>BIO</item>
         <item>CHE</item>

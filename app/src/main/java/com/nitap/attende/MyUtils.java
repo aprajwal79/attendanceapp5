@@ -1,7 +1,9 @@
 package com.nitap.attende;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 
 import androidx.annotation.NonNull;
@@ -14,7 +16,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.nitap.attende.Model.Student;
+import com.nitap.attende.models.Student;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -186,6 +188,46 @@ public class MyUtils {
 
     public static String[] convertStringtoStringArray(String courseString) {
         return courseString.split("&");
+    }
+
+    public static Object getObjectFromString(String jsonString, Class class1) {
+        ObjectMapper mapper = new ObjectMapper();
+        Object resultObject = null;
+        try {
+            resultObject = mapper.readValue(jsonString, class1);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if (resultObject == null) {
+            return null;
+        } else {
+           return resultObject;
+        }
+
+    }
+
+
+    public static String getStringFromObject(Object object) {
+        GsonBuilder builder = new GsonBuilder();
+        builder.serializeNulls();
+        Gson gson = builder.create();
+        String jsonString = gson.toJson(object);
+        return jsonString;
+    }
+
+    public static void removeAll(Context context) {
+        String[] removables = {"STUDENTCONFIG","TEACHERCONFIG","ADMINCONFIG","STUDENTCONFIGBUILDER",
+                "TEACHERCONFIGBUILDER","ADMINCONFIGBUILDER","USERTYPE","EMAIL","NAME"};
+        for (String item : removables) {
+            MyUtils.removeString(context,item);
+        }
+    }
+
+    public static void clearAppData(Context context) {
+        MyUtils.removeAll(context);
+        LoginActivity.signOut(context);
+        context.startActivity(new Intent(context,LoginActivity.class));
+
     }
 
 }

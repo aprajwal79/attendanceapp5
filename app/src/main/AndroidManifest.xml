@@ -55,13 +55,19 @@ uses-permission android:name="android.permission.BLUETOOTH_PRIVILEGED" />
         </intent-filter>
 
 
-
     </activity>
 
-    <activity android:name="com.nitap.attende.AdminActivity" android:exported="true"/>
+    <activity
+        android:name="com.nitap.attende.AdminActivity"
+        android:exported="true" />
     <activity
         android:name="com.nitap.attende.FaceRecognitionActivity"
         android:exported="true" />
+    <activity
+        android:name="com.nitap.attende.TestActivity"
+        android:exported="false"
+
+        />
     <activity
         android:name=".CameraActivity"
         android:exported="true" />

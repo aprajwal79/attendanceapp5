@@ -1,6 +1,7 @@
 package com.nitap.attende;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.LinearLayout;
@@ -27,7 +28,13 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.nitap.attende.models.Section;
+import com.nitap.attende.models.Student;
+import com.nitap.attende.models.Class;
+import com.nitap.attende.models.StudentConfiguration;
+import com.nitap.attende.models.Teacher;
 import com.nitap.attende.pages.HomeActivity;
+import com.ttv.face.FaceFeatureInfo;
 import com.ttv.facerecog.R;
 
 import java.util.Arrays;
@@ -47,14 +54,19 @@ public class LoginActivity extends AppCompatActivity {
     Set<String> sections = new ArraySet<String>();
     Set<String> teacherEmailIds = new LinkedHashSet<String>() { };
     Set<String> adminEmailIds = new LinkedHashSet<String>() { };
-    String rollno, sectionCode;
+    static String rollno, sectionCode;
+    static Student student;
+    static Section section;
+    static Class class1;
+    static Teacher teacher;
+    static FaceFeatureInfo faceFeatureInfo;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-
+        hasLeft = false;
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.web_client_id))
                 .requestEmail()
@@ -80,7 +92,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void signIn() {
-        signOut();
+        signOut(getApplicationContext());
         Intent signInIntent = mGoogleSignInClient.getSignInIntent();
         startActivityForResult(signInIntent, RC_SIGN_IN);
     }
@@ -154,19 +166,16 @@ public class LoginActivity extends AppCompatActivity {
            // Toast.makeText(this, contents[0]+"$"+contents[1], Toast.LENGTH_SHORT).show();
             if (contents.length == 2 && Objects.equals(contents[1], "student.nitandhra.ac.in")) {
                 // USERTYPE STUDENT
-                if (!Objects.equals(MyUtils.getString(this, "STUDENT"), "EMPTY")) {
-                    MyUtils.saveString(this,"USERTYPE","STUDENT");
-                    MyUtils.saveString(this,"EMAIL",email);
-                    MyUtils.saveString(getApplicationContext(),"NAME", Objects.requireNonNull(mAuth.getCurrentUser()).getDisplayName());
-                    MyUtils.removeString(this,"TEACHER");
-                    MyUtils.removeString(this,"ADMIN");
+                if (!Objects.equals(MyUtils.getString(this, "STUDENTCONFIG"), "EMPTY")) {
+                    MyUtils.removeString(this,"TEACHERCONFIG");
+                    MyUtils.removeString(this,"ADMINCONFIG");
                     hasLeft = true;
                     startActivity(new Intent(this,HomeActivity.class));
                     finish();
                 } else {
                     rollno = contents[0];
                     sectionCode = rollno.substring(0,4);
-                    checkIfSectionExists(rollno);
+                    checkIfStudentExists(rollno);
                     //Toast.makeText(getApplicationContext(), "sectionCode " +sectionCode, Toast.LENGTH_SHORT).show();
 
                 }
@@ -291,15 +300,15 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void checkIfSectionExists(String rollno) {
-        String sectionCode = rollno.substring(0,4);
-        DatabaseReference courseRef = FirebaseDatabase.getInstance().getReference().child("OBJECTS").child("SECTIONS").child(sectionCode);
+        String sectionId = rollno.substring(0,4);
+        DatabaseReference courseRef = FirebaseDatabase.getInstance().getReference().child("section").child(sectionId);
         courseRef.addValueEventListener(new ValueEventListener() {
             @SuppressLint("NewApi")
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.exists()) {
-                    // Now section exists, hence check if student is already registered in the section
-                    checkIfStudentExists(rollno);
+                    // TODO: Now section exists, hence register new student by getting section details, then asking photo
+                    fetchSectionDetails(rollno);
                 } else {
                     Toast.makeText(LoginActivity.this, "Section not found, contact admin", Toast.LENGTH_SHORT).show();
                 }
@@ -314,28 +323,105 @@ public class LoginActivity extends AppCompatActivity {
 
     }
 
-    private void checkIfStudentExists(String rollno) {
-        DatabaseReference courseRef = FirebaseDatabase.getInstance().getReference().child("OBJECTS").child("STUDENTS").child(rollno);
+    private void fetchSectionDetails(String rollno) {
+        String sectionId = rollno.substring(0,4);
+        DatabaseReference courseRef = FirebaseDatabase.getInstance().getReference().child("sections").child(sectionId);
         courseRef.addValueEventListener(new ValueEventListener() {
             @SuppressLint("NewApi")
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.exists()) {
-                    // TODO: Now student details already exist, hence get jsonString and store it;
-                    String jsonString = snapshot.getValue(String.class);
-                    MyUtils.saveString(getApplicationContext(),"USERTYPE","STUDENT");
-                    MyUtils.saveString(getApplicationContext(),"EMAIL",email);
-                    MyUtils.saveString(getApplicationContext(),"STUDENT",jsonString);
-                    hasLeft=true;
+                    // TODO: CONTINUE HERE
+                    // TODO: Now section details exist, hence get section details, then class details and redirect to photo upload
+                     section = snapshot.getValue(Section.class);
+                     String studentConfigBuilder = MyUtils.getString(getApplicationContext(),"STUDENTCONFIGBUILDER");
+                     StudentConfiguration studentConfigurationBuilder = (StudentConfiguration) MyUtils.getObjectFromString(studentConfigBuilder,StudentConfiguration.class);
+                     assert studentConfigurationBuilder != null;
+                     studentConfigurationBuilder.section = section;
+                     String updatedStudentConfig = MyUtils.getStringFromObject(studentConfigurationBuilder);
+                     MyUtils.saveString(getApplicationContext(),"STUDENTCONFIGBUILDER",updatedStudentConfig);
+                     fetchClassDetails(studentConfigurationBuilder.section.classId);
+
+                } else {
+                    // TODO: Now section details not found, display error
+                    Toast.makeText(getApplicationContext(), "Section not found, contact admin", Toast.LENGTH_SHORT).show();
+
+                }
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(LoginActivity.this, "Something went wrong", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+    }
+
+    private void fetchClassDetails(String classId) {
+        if(classId == null) {
+            Toast.makeText(this, "Class not found, contact admin", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        DatabaseReference courseRef = FirebaseDatabase.getInstance().getReference().child("classes").child(classId);
+        courseRef.addValueEventListener(new ValueEventListener() {
+            @SuppressLint("NewApi")
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+                    // TODO: Now section and class exist,save class details and register new student
+                    class1 = snapshot.getValue(Class.class);
+                    String studentConfigBuilder = MyUtils.getString(getApplicationContext(),"STUDENTCONFIGBUILDER");
+                    StudentConfiguration studentConfigurationBuilder = (StudentConfiguration) MyUtils.getObjectFromString(studentConfigBuilder,StudentConfiguration.class);
+                    assert studentConfigurationBuilder != null;
+                    studentConfigurationBuilder.class1 = class1;
+                    String faceInfoString = studentConfigurationBuilder.student.faceFeatureInfoString;
+                    FaceFeatureInfo faceFeatureInfo1 = (FaceFeatureInfo) MyUtils.getObjectFromString(faceInfoString,FaceFeatureInfo.class);
+                    assert faceFeatureInfo1!=null;
+                    MainActivity.faceEngine.registerFaceFeature(faceFeatureInfo1);
+                    String finalConfigString = MyUtils.getStringFromObject(studentConfigBuilder);
+                    MyUtils.saveString(getApplicationContext(),"STUDENTCONFIG",finalConfigString);
+                    MyUtils.removeString(getApplicationContext(),"STUDENTCONFIGBUILDER");
+                    hasLeft = true;
                     startActivity(new Intent(getApplicationContext(),HomeActivity.class));
                     finish();
+
                 } else {
-                    // TODO: Now student credentials are not found, ask for credentials and upload, also save jsonString
-                    MyUtils.saveString(getApplicationContext(),"USERTYPE","STUDENT");
-                    MyUtils.saveString(getApplicationContext(),"EMAIL",email);
-                    hasLeft=true;
-                    startActivity(new Intent(getApplicationContext(),FaceRecognitionActivity.class));
-                    finish();
+                    // TODO: Now section found but no class found, display error message
+                    Toast.makeText(LoginActivity.this, "Class not found, contact admin", Toast.LENGTH_SHORT).show();
+                }
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(LoginActivity.this, "Something went wrong", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+    }
+
+
+    private void checkIfStudentExists(String rollno) {
+        DatabaseReference courseRef = FirebaseDatabase.getInstance().getReference().child("students").child(rollno);
+        courseRef.addValueEventListener(new ValueEventListener() {
+            @SuppressLint("NewApi")
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+                    //TODO: Now student details already exist, hence get student object and store it;
+                    student = snapshot.getValue(Student.class);
+                    StudentConfiguration studentConfiguration = new StudentConfiguration();
+                    studentConfiguration.student = student;
+                   // String featureInfoString = student.faceFeatureInfoString;
+                   // faceFeatureInfo = (FaceFeatureInfo) MyUtils.getObjectFromString(featureInfoString,FaceFeatureInfo.class);
+                   // MainActivity.faceEngine.registerFaceFeature(faceFeatureInfo);
+                    String updatedStudentConfig = MyUtils.getStringFromObject(studentConfiguration);
+                    MyUtils.saveString(getApplicationContext(),"STUDENTCONFIGBUILDER",updatedStudentConfig);
+                    fetchSectionDetails(rollno);
+                } else {
+                    //TODO: Now student credentials are not found, ask for credentials and upload, also save jsonString
+                   checkIfSectionExists(rollno);
                 }
 
             }
@@ -496,17 +582,18 @@ public class LoginActivity extends AppCompatActivity {
     }
 
 
-    void signOut() {
+    public static void signOut(Context context) {
         FirebaseAuth userAuth;
         GoogleSignInClient mGoogleSigninClient;
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(getString(R.string.web_client_id))
+                .requestIdToken(context.getString(R.string.web_client_id))
                 .requestEmail()
                 .build();
-        mGoogleSigninClient = GoogleSignIn.getClient(this, gso);
-        //userAuth.getInstance().signOut();
+        mGoogleSigninClient = GoogleSignIn.getClient(context, gso);
         FirebaseAuth.getInstance().signOut();
         mGoogleSigninClient.signOut();
     }
+
+
 
 }
