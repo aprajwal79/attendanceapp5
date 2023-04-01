@@ -2,12 +2,24 @@ package com.nitap.attende;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.Rect;
+import android.net.Uri;
 import android.os.Bundle;
+import android.text.TextUtils;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.collection.ArraySet;
 
@@ -35,13 +47,25 @@ import com.nitap.attende.models.StudentConfiguration;
 import com.nitap.attende.models.Teacher;
 import com.nitap.attende.pages.HomeActivity;
 import com.ttv.face.FaceFeatureInfo;
+import com.ttv.face.FaceResult;
+import com.ttv.facerecog.DBHelper;
+import com.ttv.facerecog.FaceEntity;
+import com.ttv.facerecog.ImageRotator;
 import com.ttv.facerecog.R;
+import com.ttv.facerecog.Utils;
 
+import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+
+import kotlin.jvm.internal.Intrinsics;
 
 
 public class LoginActivity extends AppCompatActivity {
@@ -60,7 +84,12 @@ public class LoginActivity extends AppCompatActivity {
     static Class class1;
     static Teacher teacher;
     static FaceFeatureInfo faceFeatureInfo;
-
+    Button btnRegister,submitButton;
+    private DBHelper mydb ;
+    public static ArrayList userLists;
+    public static String facetagForFaceInfo ;
+    public static int searchIdForFaceInfo ;
+    LinearLayout signInButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,7 +105,7 @@ public class LoginActivity extends AppCompatActivity {
 
         mAuth = FirebaseAuth.getInstance();
 
-        LinearLayout signInButton  = findViewById(R.id.google_btn);
+        signInButton = findViewById(R.id.google_btn);
 
         signInButton.setOnClickListener(v -> {
             signIn();
@@ -88,7 +117,11 @@ public class LoginActivity extends AppCompatActivity {
         super.onStart();
         // Check if user is signed in (non-null) and update UI accordingly.
         FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser != null) {
+
+        }
         updateUI(currentUser);
+
     }
 
     private void signIn() {
@@ -101,7 +134,7 @@ public class LoginActivity extends AppCompatActivity {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
 
         super.onActivityResult(requestCode, resultCode, data);
-        // Result returned from launching the Intent from GoogleSignInClient.getSignInIntent(...);
+
 
         if (requestCode == RC_SIGN_IN && mAuth.getCurrentUser()==null)  {
             Toast.makeText(getApplicationContext(), "Processing, please wait", Toast.LENGTH_SHORT).show();
@@ -124,6 +157,8 @@ public class LoginActivity extends AppCompatActivity {
             }
         }
 
+
+
     }
 
     private void firebaseAuthWithGoogle(String idToken) {
@@ -133,6 +168,7 @@ public class LoginActivity extends AppCompatActivity {
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
+
                         if (task.isSuccessful()) {
                             // Sign in success, update UI with the signed-in user's information
                             FirebaseUser user = mAuth.getCurrentUser();
@@ -143,6 +179,7 @@ public class LoginActivity extends AppCompatActivity {
                                     Toast.LENGTH_SHORT).show();
                             updateUI(null);
                         }
+
                     }
                 });
     }
@@ -169,12 +206,27 @@ public class LoginActivity extends AppCompatActivity {
                 if (!Objects.equals(MyUtils.getString(this, "STUDENTCONFIG"), "EMPTY")) {
                     MyUtils.removeString(this,"TEACHERCONFIG");
                     MyUtils.removeString(this,"ADMINCONFIG");
+                    MyUtils.removeString(this,"TEACHERCONFIGBUILDER");
+                    MyUtils.removeString(this,"ADMINCONFIGBUILDER");
+                    MyUtils.removeString(this,"STUDENTCONFIGBUILDER");
+                    /*MyUtils.removeString(this,"USERTYPE");
+                    MyUtils.removeString(this,"EMAIL");
+                    MyUtils.removeString(this,"NAME");*/
+                    assert MyUtils.getStudentConfiguration(getApplicationContext()).student.email!=null;
+
                     hasLeft = true;
                     startActivity(new Intent(this,HomeActivity.class));
                     finish();
                 } else {
+
+
+                    MyUtils.removeAll(getApplicationContext());
+                    StudentConfiguration firstStudentConfig = new StudentConfiguration();
+                    String updatedStudentConfig = MyUtils.getStringFromObject(firstStudentConfig);
+                    MyUtils.saveString(getApplicationContext(),"STUDENTCONFIGBUILDER",updatedStudentConfig);
                     rollno = contents[0];
                     sectionCode = rollno.substring(0,4);
+                    assert MyUtils.getStudentConfigurationBuilder(getApplicationContext())!=null;
                     checkIfStudentExists(rollno);
                     //Toast.makeText(getApplicationContext(), "sectionCode " +sectionCode, Toast.LENGTH_SHORT).show();
 
@@ -182,21 +234,18 @@ public class LoginActivity extends AppCompatActivity {
 
             } else{
                 // USERTYPE FACULTY AND ADMIN
-                if (!Objects.equals(MyUtils.getString(this, "TEACHER"), "EMPTY")) {
-                    MyUtils.saveString(this,"USERTYPE","TEACHER");
-                    MyUtils.saveString(this,"EMAIL",email);
-                    MyUtils.saveString(getApplicationContext(),"NAME", Objects.requireNonNull(mAuth.getCurrentUser()).getDisplayName());
-                    MyUtils.removeString(this,"STUDENT");
-                    MyUtils.removeString(this,"ADMIN");
+                MyUtils.removeString(this,"STUDENTCONFIG");
+                MyUtils.removeString(this,"STUDENTCONFIGBUILDER");
+                MyUtils.removeString(this,"TEACHERCONFIGBUILDER");
+                MyUtils.removeString(this,"ADMINCONFIGBUILDER");
+
+                if (!Objects.equals(MyUtils.getString(this, "TEACHERCONFIG"), "EMPTY")) {
+                    MyUtils.removeString(this,"ADMINCONFIG");
                     hasLeft = true;
                     startActivity(new Intent(this,HomeActivity.class));
                     finish();
-                } else if (!Objects.equals(MyUtils.getString(this, "ADMIN"), "EMPTY")) {
-                    MyUtils.saveString(this,"USERTYPE","ADMIN");
-                    MyUtils.saveString(this,"EMAIL",email);
-                    MyUtils.saveString(getApplicationContext(),"NAME", Objects.requireNonNull(mAuth.getCurrentUser()).getDisplayName());
-                    MyUtils.removeString(this,"STUDENT");
-                    MyUtils.removeString(this,"TEACHER");
+                } else if (!Objects.equals(MyUtils.getString(this, "ADMINCONFIG"), "EMPTY")) {
+                    MyUtils.removeString(this,"TEACHERCONFIG");
                     hasLeft = true;
                     startActivity(new Intent(this,HomeActivity.class));
                     finish();
@@ -253,13 +302,14 @@ public class LoginActivity extends AppCompatActivity {
             @SuppressLint("NewApi")
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
+
                 if (snapshot.exists()) {
                     //TODO:  Now teacher exists, download teacher object and save jsonString
 
                 } else {
                    checkIfUserIsAdmin(email);
                 }
-
+                courseRef.removeEventListener(this);
             }
 
             @Override
@@ -288,7 +338,7 @@ public class LoginActivity extends AppCompatActivity {
                 } else {
                     Toast.makeText(getApplicationContext(), "Account not authorised, try again", Toast.LENGTH_SHORT).show();
                 }
-
+                courseRef.removeEventListener(this);
             }
 
             @Override
@@ -301,18 +351,33 @@ public class LoginActivity extends AppCompatActivity {
 
     private void checkIfSectionExists(String rollno) {
         String sectionId = rollno.substring(0,4);
-        DatabaseReference courseRef = FirebaseDatabase.getInstance().getReference().child("section").child(sectionId);
+        Toast.makeText(this,"sec id " + sectionId, Toast.LENGTH_SHORT).show();
+        DatabaseReference courseRef = FirebaseDatabase.getInstance().getReference().child("sections").child(sectionId);
         courseRef.addValueEventListener(new ValueEventListener() {
+
             @SuppressLint("NewApi")
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.exists()) {
-                    // TODO: Now section exists, hence register new student by getting section details, then asking photo
-                    fetchSectionDetails(rollno);
-                } else {
-                    Toast.makeText(LoginActivity.this, "Section not found, contact admin", Toast.LENGTH_SHORT).show();
-                }
+                    Toast.makeText(getApplicationContext(), "section exists", Toast.LENGTH_SHORT).show();
+                    // TODO: Now section details exist, hence get section details, then class details and redirect to photo upload
+                    section = snapshot.getValue(Section.class);
+                    String studentConfigBuilder = MyUtils.getString(getApplicationContext(),"STUDENTCONFIGBUILDER");
+                    StudentConfiguration studentConfigurationBuilder = MyUtils.getStudentConfigurationBuilder(getApplicationContext());//(StudentConfiguration) MyUtils.getObjectFromString(studentConfigBuilder,StudentConfiguration.class);
+                    assert studentConfigurationBuilder != null;
+                    studentConfigurationBuilder.section = section;
+                    String updatedStudentConfig = MyUtils.getStringFromObject(studentConfigurationBuilder);
+                    MyUtils.saveString(getApplicationContext(),"STUDENTCONFIGBUILDER",updatedStudentConfig);
+                    assert MyUtils.getStudentConfigurationBuilder(getApplicationContext()).section!=null;
+                    checkIfClassExists(studentConfigurationBuilder.section.classId);
 
+                } else {
+                    // TODO: Now section details not found, display error
+                    MyUtils.removeAll(getApplicationContext());
+                    Toast.makeText(getApplicationContext(), "Section not found, contact admin", Toast.LENGTH_SHORT).show();
+
+                }
+                courseRef.removeEventListener(this);
             }
 
             @Override
@@ -323,31 +388,127 @@ public class LoginActivity extends AppCompatActivity {
 
     }
 
+    private void checkIfClassExists(String classId) {
+        if(classId == null) {
+            Toast.makeText(this, "Class id null", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        DatabaseReference courseRef = FirebaseDatabase.getInstance().getReference().child("classes").child(classId);
+        courseRef.addValueEventListener(new ValueEventListener() {
+            @SuppressLint("NewApi")
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+
+                if (snapshot.exists()) {
+                    Toast.makeText(getApplicationContext(), "", Toast.LENGTH_SHORT).show();
+                    // TODO: Now section and class exist,save class details and register new student
+                    class1 = snapshot.getValue(Class.class);
+                    String studentConfigBuilder = MyUtils.getString(getApplicationContext(),"STUDENTCONFIGBUILDER");
+                    StudentConfiguration studentConfigurationBuilder = MyUtils.getStudentConfigurationBuilder(getApplicationContext());//(StudentConfiguration) MyUtils.getObjectFromString(studentConfigBuilder,StudentConfiguration.class);
+                    assert studentConfigurationBuilder != null;
+                    studentConfigurationBuilder.class1 = class1;
+                    String updatedConfigString = MyUtils.getStringFromObject(studentConfigurationBuilder);
+                    MyUtils.saveString(getApplicationContext(),"STUDENTCONFIGBUILDER",updatedConfigString);
+                    assert MyUtils.getStudentConfigurationBuilder(getApplicationContext()).class1!=null;
+                    initialiseStudentCredentials();
+                    /*
+                    hasLeft = true;
+                    startActivity(new Intent(LoginActivity.this, FaceRecognitionActivity.class));
+                    finish();
+                    */
+                    /*
+                    String finalConfigString = MyUtils.getStringFromObject(studentConfigBuilder);
+                    MyUtils.saveString(getApplicationContext(),"STUDENTCONFIG",finalConfigString);
+                    MyUtils.removeString(getApplicationContext(),"STUDENTCONFIGBUILDER");
+                    hasLeft = true;
+                    startActivity(new Intent(getApplicationContext(),HomeActivity.class));
+                    finish();*/
+
+                } else {
+                    // TODO: Now section found but no class found, display error message
+                    MyUtils.removeAll(getApplicationContext());
+                    Toast.makeText(LoginActivity.this, "Class not found, contact admin", Toast.LENGTH_SHORT).show();
+                }
+                courseRef.removeEventListener(this);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(LoginActivity.this, "Something went wrong", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+    }
+
+    private void initialiseStudentCredentials() {
+
+        String email = Objects.requireNonNull(mAuth.getCurrentUser()).getEmail();
+        assert email != null;
+        String[] contents = email.split("@");
+        String rollno = contents[0];
+        facetagForFaceInfo = rollno;
+        Student student1 = new Student();
+        student1.rollno = rollno;
+        student1.email =email;
+        student1.name = mAuth.getCurrentUser().getDisplayName();
+        student1.sectionId = rollno.substring(0,4);
+        StudentConfiguration updatedConfig = MyUtils.getStudentConfigurationBuilder(getApplicationContext());
+        assert updatedConfig != null;
+        updatedConfig.student = student1;
+        String updatedString = MyUtils.getStringFromObject(updatedConfig);
+        MyUtils.saveString(getApplicationContext(),"STUDENTCONFIGBUILDER",updatedString);
+        assert MyUtils.getStudentConfigurationBuilder(getApplicationContext()) != null;
+        //setContentView(R.layout.activity_face_recognition);
+        //btnRegister = findViewById(R.id.upload_btn);
+        //submitButton =findViewById(R.id.button_next);
+        //btnRegister.setEnabled(true);
+        //submitButton.setEnabled(false);
+        /*
+        btnRegister.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent();
+                intent.setType("image/*");
+                intent.setAction("android.intent.action.PICK");
+                startActivityForResult(Intent.createChooser(intent, "Select Picture"), 1);
+            }
+        });
+        */
+        Toast.makeText(getApplicationContext(), "Upload photo to complete the registration", Toast.LENGTH_SHORT).show();
+        assert MyUtils.getStudentConfigurationBuilder(getApplicationContext()) != null;
+        hasLeft = true;
+        startActivity(new Intent(this,FaceRecognitionActivity.class));
+        finish();
+    }
+
     private void fetchSectionDetails(String rollno) {
         String sectionId = rollno.substring(0,4);
+        Toast.makeText(this, "section id "+ sectionId, Toast.LENGTH_SHORT).show();
         DatabaseReference courseRef = FirebaseDatabase.getInstance().getReference().child("sections").child(sectionId);
         courseRef.addValueEventListener(new ValueEventListener() {
             @SuppressLint("NewApi")
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
+
                 if (snapshot.exists()) {
                     // TODO: CONTINUE HERE
-                    // TODO: Now section details exist, hence get section details, then class details and redirect to photo upload
-                     section = snapshot.getValue(Section.class);
-                     String studentConfigBuilder = MyUtils.getString(getApplicationContext(),"STUDENTCONFIGBUILDER");
-                     StudentConfiguration studentConfigurationBuilder = (StudentConfiguration) MyUtils.getObjectFromString(studentConfigBuilder,StudentConfiguration.class);
-                     assert studentConfigurationBuilder != null;
-                     studentConfigurationBuilder.section = section;
-                     String updatedStudentConfig = MyUtils.getStringFromObject(studentConfigurationBuilder);
-                     MyUtils.saveString(getApplicationContext(),"STUDENTCONFIGBUILDER",updatedStudentConfig);
-                     fetchClassDetails(studentConfigurationBuilder.section.classId);
+                    // TODO: Now section details exist, hence get section details, then class details and register face engine
+                    section = snapshot.getValue(Section.class);
+                    //String studentConfigBuilder = MyUtils.getString(getApplicationContext(),"STUDENTCONFIGBUILDER");
+                    StudentConfiguration studentConfigurationBuilder = MyUtils.getStudentConfigurationBuilder(getApplicationContext());//(StudentConfiguration) MyUtils.getObjectFromString(studentConfigBuilder,StudentConfiguration.class);
+                    assert studentConfigurationBuilder != null;
+                    studentConfigurationBuilder.section = section;
+                    String updatedStudentConfig = MyUtils.getStringFromObject(studentConfigurationBuilder);
+                    MyUtils.saveString(getApplicationContext(),"STUDENTCONFIGBUILDER",updatedStudentConfig);
+                    fetchClassDetails(studentConfigurationBuilder.section.classId);
 
                 } else {
                     // TODO: Now section details not found, display error
+                    MyUtils.removeAll(getApplicationContext());
                     Toast.makeText(getApplicationContext(), "Section not found, contact admin", Toast.LENGTH_SHORT).show();
 
                 }
-
+                courseRef.removeEventListener(this);
             }
 
             @Override
@@ -360,7 +521,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private void fetchClassDetails(String classId) {
         if(classId == null) {
-            Toast.makeText(this, "Class not found, contact admin", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Class id null", Toast.LENGTH_SHORT).show();
             return;
         }
         DatabaseReference courseRef = FirebaseDatabase.getInstance().getReference().child("classes").child(classId);
@@ -368,29 +529,34 @@ public class LoginActivity extends AppCompatActivity {
             @SuppressLint("NewApi")
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
+
                 if (snapshot.exists()) {
                     // TODO: Now section and class exist,save class details and register new student
                     class1 = snapshot.getValue(Class.class);
                     String studentConfigBuilder = MyUtils.getString(getApplicationContext(),"STUDENTCONFIGBUILDER");
                     StudentConfiguration studentConfigurationBuilder = (StudentConfiguration) MyUtils.getObjectFromString(studentConfigBuilder,StudentConfiguration.class);
-                    assert studentConfigurationBuilder != null;
+                    assert studentConfigurationBuilder.section != null;
                     studentConfigurationBuilder.class1 = class1;
                     String faceInfoString = studentConfigurationBuilder.student.faceFeatureInfoString;
                     FaceFeatureInfo faceFeatureInfo1 = (FaceFeatureInfo) MyUtils.getObjectFromString(faceInfoString,FaceFeatureInfo.class);
                     assert faceFeatureInfo1!=null;
                     MainActivity.faceEngine.registerFaceFeature(faceFeatureInfo1);
-                    String finalConfigString = MyUtils.getStringFromObject(studentConfigBuilder);
+                    String finalConfigString = MyUtils.getStringFromObject(studentConfigurationBuilder);
                     MyUtils.saveString(getApplicationContext(),"STUDENTCONFIG",finalConfigString);
                     MyUtils.removeString(getApplicationContext(),"STUDENTCONFIGBUILDER");
+                    //assert MyUtils.getStudentConfigurationBuilder(getApplicationContext()).student.email != null;
+
+                    assert MyUtils.getStudentConfiguration(getApplicationContext()).student.email != null;
                     hasLeft = true;
                     startActivity(new Intent(getApplicationContext(),HomeActivity.class));
                     finish();
 
                 } else {
                     // TODO: Now section found but no class found, display error message
+                    MyUtils.removeAll(getApplicationContext());
                     Toast.makeText(LoginActivity.this, "Class not found, contact admin", Toast.LENGTH_SHORT).show();
                 }
-
+                courseRef.removeEventListener(this);
             }
 
             @Override
@@ -408,6 +574,7 @@ public class LoginActivity extends AppCompatActivity {
             @SuppressLint("NewApi")
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
+
                 if (snapshot.exists()) {
                     //TODO: Now student details already exist, hence get student object and store it;
                     student = snapshot.getValue(Student.class);
@@ -418,12 +585,14 @@ public class LoginActivity extends AppCompatActivity {
                    // MainActivity.faceEngine.registerFaceFeature(faceFeatureInfo);
                     String updatedStudentConfig = MyUtils.getStringFromObject(studentConfiguration);
                     MyUtils.saveString(getApplicationContext(),"STUDENTCONFIGBUILDER",updatedStudentConfig);
+                    assert MyUtils.getStudentConfigurationBuilder(getApplicationContext()).student!=null;
                     fetchSectionDetails(rollno);
                 } else {
                     //TODO: Now student credentials are not found, ask for credentials and upload, also save jsonString
+                    assert rollno!=null;
                    checkIfSectionExists(rollno);
                 }
-
+                courseRef.removeEventListener(this);
             }
 
             @Override
@@ -514,7 +683,7 @@ public class LoginActivity extends AppCompatActivity {
                     }
                 });
                 */
-
+                courseRef.removeEventListener(this);
             }
 
             @Override
@@ -551,6 +720,7 @@ public class LoginActivity extends AppCompatActivity {
                         finish();
                     }
                 });
+                courseRef.removeEventListener(this);
             }
 
             @Override
@@ -570,7 +740,7 @@ public class LoginActivity extends AppCompatActivity {
                 for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
                     teacherEmailIds.add(Objects.requireNonNull(dataSnapshot.getKey()).replace("?","."));
                 }
-
+                courseRef.removeEventListener(this);
             }
 
             @Override
@@ -593,6 +763,18 @@ public class LoginActivity extends AppCompatActivity {
         FirebaseAuth.getInstance().signOut();
         mGoogleSigninClient.signOut();
     }
+
+
+    void display(String msg) {
+        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+    }
+
+
+
+
+
+
+
 
 
 

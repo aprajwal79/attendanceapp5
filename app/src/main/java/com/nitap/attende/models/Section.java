@@ -1,9 +1,9 @@
 package com.nitap.attende.models;
 
-import android.util.ArraySet;
+import java.util.ArrayList;
 
 public class Section {
     public String sectionId,max,startRollno,endRollno,sectionName;
     public String classId;
-    public ArraySet<String> teacherEmails;
+   // public ArrayList<String> teacherEmails;
 }

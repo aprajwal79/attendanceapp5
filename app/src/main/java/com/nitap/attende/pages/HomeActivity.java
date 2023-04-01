@@ -13,7 +13,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
@@ -23,7 +25,10 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.nitap.attende.LoginActivity;
+import com.nitap.attende.MyUtils;
 import com.ttv.face.FaceFeatureInfo;
 import com.ttv.face.FaceResult;
 import com.ttv.facerecog.CameraActivity;
@@ -52,6 +57,7 @@ public class HomeActivity extends AppCompatActivity {
     FirebaseAuth userAuth;
     ActivityHomeBinding binding;
     private GoogleSignInClient mGoogleSigninClient;
+    ImageButton profileBtn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,10 +86,17 @@ public class HomeActivity extends AppCompatActivity {
 
 
             }
+             });
 
-
-
+        profileBtn = findViewById(R.id.profile_btn);
+        profileBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(getApplicationContext(),ViewStudentProfileActivity.class));
+            }
         });
+
+
 
 
     }

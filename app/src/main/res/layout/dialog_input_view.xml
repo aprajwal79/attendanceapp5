@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
     <TextView
-        android:text="@string/name_should_not_be_empty"
+        android:text="Confirm? You CANNOT change it later"
         android:textSize="20sp"
         android:gravity="center"
         android:layout_marginTop="12dp"
@@ -17,9 +17,4 @@
         android:layout_width="@dimen/item_image_size"
         android:layout_marginTop="12dp"
         android:layout_height="@dimen/item_image_size"/>
-    <EditText
-        android:layout_margin="@dimen/common_margin"
-        android:id="@+id/et_user_name"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
 </LinearLayout>

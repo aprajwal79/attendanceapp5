@@ -17,6 +17,8 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.nitap.attende.models.Student;
+import com.nitap.attende.models.StudentConfiguration;
+import com.ttv.face.FaceFeatureInfo;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -230,4 +232,46 @@ public class MyUtils {
 
     }
 
+    public static StudentConfiguration getStudentConfigurationBuilder(Context context) {
+        ObjectMapper mapper = new ObjectMapper();
+        StudentConfiguration studentConfiguration = new StudentConfiguration();
+        try {
+            String jsonString = MyUtils.getString(context,"STUDENTCONFIGBUILDER");
+            if (Objects.equals(jsonString, "EMPTY"))
+                return null;
+            studentConfiguration = mapper.readValue(jsonString, StudentConfiguration.class);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if (studentConfiguration == null){ return null; }
+        else  { return studentConfiguration; }
+    }
+
+    public static FaceFeatureInfo getFaceFeatureInfo(Context applicationContext, String faceinfoString) {
+        ObjectMapper mapper = new ObjectMapper();
+        FaceFeatureInfo faceFeatureInfo = new FaceFeatureInfo();
+        try {
+            faceFeatureInfo = mapper.readValue(faceinfoString, FaceFeatureInfo.class);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if (faceFeatureInfo == null){ return null; }
+        else  { return faceFeatureInfo; }
+    }
+
+    public static StudentConfiguration getStudentConfiguration(Context context) {
+        ObjectMapper mapper = new ObjectMapper();
+        StudentConfiguration studentConfiguration = new StudentConfiguration();
+        try {
+            String jsonString = MyUtils.getString(context,"STUDENTCONFIG");
+            if (Objects.equals(jsonString, "EMPTY"))
+                return null;
+            studentConfiguration = mapper.readValue(jsonString, StudentConfiguration.class);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if (studentConfiguration == null){ return null; }
+        else  { return studentConfiguration; }
+    }
 }
+
