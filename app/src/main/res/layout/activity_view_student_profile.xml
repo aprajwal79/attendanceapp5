@@ -6,4 +6,69 @@
     android:layout_height="match_parent"
     tools:context="com.nitap.attende.pages.ViewStudentProfileActivity">
 
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:paddingLeft="20dp"
+        android:paddingTop="20dp"
+        >
+
+
+        <TextView
+            android:id="@+id/rollno"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+
+            android:text="TextView" />
+        <TextView
+            android:id="@+id/fullname"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+
+            android:text="TextView" />
+        <TextView
+            android:id="@+id/email"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+
+            android:text="TextView" />
+        <TextView
+        android:id="@+id/degree"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+
+        android:text="TextView" />
+        <TextView
+            android:id="@+id/branch"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+
+            android:text="TextView" />
+        <TextView
+            android:id="@+id/year"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+
+            android:text="TextView" />
+        <TextView
+            android:id="@+id/sem"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+
+            android:text="TextView" />
+        <TextView
+            android:id="@+id/sectionName"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+
+            android:text="TextView" />
+
+
+    </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

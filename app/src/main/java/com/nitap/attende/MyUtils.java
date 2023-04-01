@@ -18,6 +18,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.nitap.attende.models.Student;
 import com.nitap.attende.models.StudentConfiguration;
+import com.nitap.attende.models.TeacherConfiguration;
 import com.ttv.face.FaceFeatureInfo;
 
 import java.io.IOException;
@@ -155,6 +156,8 @@ public class MyUtils {
                     if (Objects.equals(dataSnapshot.getKey(), "COURSES"))
                         info[5] = dataSnapshot.getValue(String.class);
                 });
+
+
             }
 
             @Override
@@ -273,5 +276,22 @@ public class MyUtils {
         if (studentConfiguration == null){ return null; }
         else  { return studentConfiguration; }
     }
+
+    public static TeacherConfiguration getTeacherConfiguration(Context context) {
+        ObjectMapper mapper = new ObjectMapper();
+        TeacherConfiguration teacherConfiguration = new TeacherConfiguration();
+        try {
+            String jsonString = MyUtils.getString(context,"TEACHERCONFIG");
+            if (Objects.equals(jsonString, "EMPTY"))
+                return null;
+            teacherConfiguration = mapper.readValue(jsonString, TeacherConfiguration.class);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if (teacherConfiguration == null){ return null; }
+        else  { return teacherConfiguration; }
+    }
+
+
 }
 

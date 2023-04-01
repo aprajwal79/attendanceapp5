@@ -130,127 +130,7 @@ public class FaceRecognitionActivity extends AppCompatActivity {
 
 
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        //super.onActivityResult(requestCode,resultCode,data);
 
-        ////////
-
-        //display("ACTIVITY RESULT");
-        /*
-        if (requestCode == 1 && resultCode == -1) {
-            try {
-                Context var10000 = (Context)this;
-                Uri var10001 = data != null ? data.getData() : null;
-                if (data == null) {
-                    display("DATA NULL");
-                } else {
-                    display(data.getData().toString());
-                }
-                Intrinsics.checkNotNull(var10001);
-                Bitmap var20 = ImageRotator.getCorrectlyOrientedImage(var10000, var10001);
-                if (var20 == null) {
-                    display("BITMAP NULL");
-                } else {
-                    display(var20.toString());
-                }
-                Intrinsics.checkNotNullExpressionValue(var20, "ImageRotator.getCorrectl…Image(this, data?.data!!)");
-                Bitmap bitmap = var20;
-                List<FaceResult> var21 = com.nitap.attende.MainActivity.faceEngine.detectFace(bitmap);
-                Intrinsics.checkNotNullExpressionValue(var21, "FaceEngine.getInstance(this).detectFace(bitmap)");
-                if (var21 == null) {
-                    display("FACERESULT NULL");
-                } else {
-                    display(Objects.toString(var21.size()));
-                }
-                final List faceResults = var21;
-                Collection var6 = (Collection)faceResults;
-                if (var6.size() == 1) {
-                    com.nitap.attende.MainActivity.faceEngine.extractFeature(bitmap, true, faceResults);
-                    display("FEATURES EXTRACTED");
-                    // StringCompanionObject var7 = StringCompanionObject.INSTANCE;
-                    String var8 = "User%03d";
-                    Object[] var22 = new Object[1];
-                    ArrayList var10003 = userLists;
-
-                    if (var10003 == null) {
-                        Intrinsics.throwUninitializedPropertyAccessException("userLists");
-                    }
-
-                    var22[0] = var10003.size() + 1;
-                    Object[] var9 = var22;
-                    String var23 = String.format(var8, Arrays.copyOf(var9, var9.length));
-                    Intrinsics.checkNotNullExpressionValue(var23, "java.lang.String.format(format, *args)");
-                    String userName = var23;
-                    Rect cropRect = Utils.getBestRect(bitmap.getWidth(), bitmap.getHeight(), ((FaceResult)faceResults.get(0)).rect);
-                    final Bitmap headImg = Utils.crop(bitmap, cropRect.left, cropRect.top, cropRect.width(), cropRect.height(), 120, 120);
-                    View inputView = LayoutInflater.from(this).inflate(layout.dialog_input_view, (ViewGroup)null, false);
-                    final EditText editText = (EditText)inputView.findViewById(id.et_user_name);
-                    ImageView ivHead = (ImageView)inputView.findViewById(id.iv_head);
-                    ivHead.setImageBitmap(headImg);
-                    editText.setText((CharSequence)userName);
-                    // Context var10002 = this.context;
-                    //Intrinsics.checkNotNull(var10002);
-                    AlertDialog var24 = (new AlertDialog.Builder(this)).setView(inputView).setPositiveButton((CharSequence)"OK", (DialogInterface.OnClickListener)null).setNegativeButton((CharSequence)"Cancel", (DialogInterface.OnClickListener)null).create();
-                    Intrinsics.checkNotNullExpressionValue(var24, "AlertDialog.Builder(cont…                .create()");
-                    final AlertDialog confirmUpdateDialog = var24;
-                    confirmUpdateDialog.show();
-                    display("ALERT SHOWED");
-                    confirmUpdateDialog.getButton(-1).setOnClickListener((View.OnClickListener)(new View.OnClickListener() {
-                        public final void onClick(@Nullable View v) {
-                            EditText var10000 = editText;
-                            Intrinsics.checkNotNullExpressionValue(var10000, "editText");
-                            String s = var10000.getText().toString();
-                            if (TextUtils.isEmpty((CharSequence)s)) {
-                                var10000 = editText;
-                                Intrinsics.checkNotNullExpressionValue(var10000, "editText");
-                                var10000.setError((CharSequence)getApplication().getString(string.name_should_not_be_empty));
-                            } else {
-                                boolean exists = false;
-                                Iterator var5 = MainActivity.Companion.getUserLists().iterator();
-
-                                while(var5.hasNext()) {
-                                    FaceEntity user = (FaceEntity)var5.next();
-                                    if (TextUtils.equals((CharSequence)user.userName, (CharSequence)s)) {
-                                        exists = true;
-                                        break;
-                                    }
-                                }
-
-                                if (exists) {
-                                    var10000 = editText;
-                                    Intrinsics.checkNotNullExpressionValue(var10000, "editText");
-                                    var10000.setError(getApplication().getString(string.duplicated_name));
-                                } else {
-                                    DBHelper var9 = mydb;
-                                    Intrinsics.checkNotNull(var9);
-                                    int user_id = var9.insertUser(s, headImg, ((FaceResult)faceResults.get(0)).feature);
-                                    FaceEntity face = new FaceEntity(user_id, s, headImg, ((FaceResult)faceResults.get(0)).feature);
-                                    MainActivity.Companion.getUserLists().add(face);
-
-                                    FaceFeatureInfo faceFeatureInfo = new FaceFeatureInfo(user_id, ((FaceResult)faceResults.get(0)).feature);
-                                    com.nitap.attende.MainActivity.faceEngine.registerFaceFeature(faceFeatureInfo);
-                                    confirmUpdateDialog.cancel();
-                                    View var10 = findViewById(id.upload_btn);
-                                    Intrinsics.checkNotNullExpressionValue(var10, "findViewById<Button>(R.id.btnVerify)");
-                                    ((Button)var10).setEnabled(MainActivity.Companion.getUserLists().size() > 0);
-                                    submitButton.setEnabled(true);
-                                    Toast.makeText(getApplicationContext(), "Register succeed!", Toast.LENGTH_SHORT).show();
-                                }
-                            }
-                        }
-                    }));
-                } else {
-                    var6 = (Collection)faceResults;
-                    if (var6.size() > 1) {
-                        Toast.makeText((Context)this, (CharSequence)"Multiple face detected!", Toast.LENGTH_SHORT).show();
-                    } else {
-                        Toast.makeText((Context)this, (CharSequence)"No face detected!", Toast.LENGTH_SHORT).show();
-                    }
-                }
-            } catch (Exception var13) {
-                var13.printStackTrace();
-            }
-        }
-        */
         if (requestCode == 1 && resultCode == -1) {
             try {
                 Context var10000 = (Context)this;
@@ -311,48 +191,59 @@ public class FaceRecognitionActivity extends AppCompatActivity {
                     //display("ALERT SHOWED");
                     confirmUpdateDialog.getButton(-1).setOnClickListener((View.OnClickListener)(new View.OnClickListener() {
                         public final void onClick(@Nullable View v) {
-                           // EditText var10000 = editText;
-                            Intrinsics.checkNotNullExpressionValue(var10000, "editText");
-                            String s = facetagForFaceInfo;//var10000.getText().toString();
 
-                                boolean exists = false;
-                                Iterator var5 = com.ttv.facerecog.MainActivity.Companion.getUserLists().iterator();
-
-                                while(var5.hasNext()) {
-                                    FaceEntity user = (FaceEntity)var5.next();
-                                    if (TextUtils.equals((CharSequence)user.userName, (CharSequence)s)) {
-                                        exists = true;
-                                        break;
-                                    }
-                                }
-
-
-                                    DBHelper var9 = mydb;
-                                    Intrinsics.checkNotNull(var9);
-                                    int user_id = var9.insertUser(s, headImg, ((FaceResult)faceResults.get(0)).feature);
-                                    FaceEntity face = new FaceEntity(user_id, s, headImg, ((FaceResult)faceResults.get(0)).feature);
-                                    com.ttv.facerecog.MainActivity.Companion.getUserLists().add(face);
-
-                                    FaceFeatureInfo faceFeatureInfo = new FaceFeatureInfo(user_id, ((FaceResult)faceResults.get(0)).feature,facetagForFaceInfo);
-                                    StudentConfiguration builderConfiguration = MyUtils.getStudentConfigurationBuilder(getApplicationContext());
-                                    String faceInfoString = MyUtils.getStringFromObject(faceFeatureInfo);
-                                    assert builderConfiguration != null;
-                                    assert builderConfiguration.student!=null;
-                                    builderConfiguration.student.faceFeatureInfoString = faceInfoString;
-                                    Toast.makeText(getApplicationContext(), "Uploading the photo", Toast.LENGTH_SHORT).show();
-                                    uploadStudent(builderConfiguration.student);
-
-                                    //com.nitap.attende.MainActivity.faceEngine.registerFaceFeature(faceFeatureInfo);
-                                    confirmUpdateDialog.cancel();
-                                    View var10 = findViewById(R.id.upload_btn);
-                                    Intrinsics.checkNotNullExpressionValue(var10, "findViewById<Button>(R.id.btnVerify)");
-                                    //((Button)var10).setEnabled(com.ttv.facerecog.MainActivity.Companion.getUserLists().size() > 0);
-                                    //submitButton.setEnabled(true);
 
 
 
                         }
                     }));
+                     confirmUpdateDialog.cancel();
+                    // START
+
+                    // EditText var10000 = editText;
+                    Intrinsics.checkNotNullExpressionValue(var10000, "editText");
+                    String s = facetagForFaceInfo;//var10000.getText().toString();
+
+                    boolean exists = false;
+                    Iterator var5 = com.ttv.facerecog.MainActivity.Companion.getUserLists().iterator();
+
+                    while(var5.hasNext()) {
+                        FaceEntity user = (FaceEntity)var5.next();
+                        if (TextUtils.equals((CharSequence)user.userName, (CharSequence)s)) {
+                            exists = true;
+                            break;
+                        }
+                    }
+
+
+                    DBHelper var91 = mydb;
+                    Intrinsics.checkNotNull(var9);
+                    int user_id = var91.insertUser(s, headImg, ((FaceResult)faceResults.get(0)).feature);
+                    FaceEntity face = new FaceEntity(user_id, s, headImg, ((FaceResult)faceResults.get(0)).feature);
+                    com.ttv.facerecog.MainActivity.Companion.getUserLists().add(face);
+
+                    FaceFeatureInfo faceFeatureInfo = new FaceFeatureInfo(user_id, ((FaceResult)faceResults.get(0)).feature,facetagForFaceInfo);
+                    StudentConfiguration builderConfiguration = MyUtils.getStudentConfigurationBuilder(getApplicationContext());
+                    String faceInfoString = MyUtils.getStringFromObject(faceFeatureInfo);
+                    test(faceInfoString);
+                    assert builderConfiguration != null;
+                    assert builderConfiguration.student!=null;
+                    builderConfiguration.student.faceFeatureInfoString = faceInfoString;
+
+                    String updatedString = MyUtils.getStringFromObject(builderConfiguration);
+                    MyUtils.saveString(getApplicationContext(),"STUDENTCONFIGBUILDER",updatedString);
+                    Toast.makeText(getApplicationContext(), "Uploading the photo", Toast.LENGTH_SHORT).show();
+                    uploadStudent(builderConfiguration.student);
+
+                    //com.nitap.attende.MainActivity.faceEngine.registerFaceFeature(faceFeatureInfo);
+                    confirmUpdateDialog.cancel();
+                    View var10 = findViewById(R.id.upload_btn);
+                    Intrinsics.checkNotNullExpressionValue(var10, "findViewById<Button>(R.id.btnVerify)");
+                    //((Button)var10).setEnabled(com.ttv.facerecog.MainActivity.Companion.getUserLists().size() > 0);
+                    //submitButton.setEnabled(true);
+
+                    // END
+
                 } else {
                     var6 = (Collection)faceResults;
                     if (var6.size() > 1) {
@@ -372,6 +263,26 @@ public class FaceRecognitionActivity extends AppCompatActivity {
 
     }
 
+    private void test(String faceInfoString) {
+        FaceFeatureInfo faceinfo = MyUtils.getFaceFeatureInfo(this,faceInfoString);
+        String newFaceString = MyUtils.getStringFromObject(faceinfo);
+        if(faceInfoString.equals(newFaceString)) {
+            Toast.makeText(this, "BOTH SAME", Toast.LENGTH_SHORT).show();
+            FaceFeatureInfo newInfo = MyUtils.getFaceFeatureInfo(this,newFaceString);
+            assert faceinfo != null;
+            assert newInfo != null;
+            if (Arrays.equals(faceinfo.getFeatureData(), newInfo.getFeatureData())) {
+                Toast.makeText(this, "FEATURE DATA ALSO SAME", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "FEATURE DATA IS DIFFERENT", Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            Toast.makeText(this, "BOTH DIFFERENT", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, faceInfoString, Toast.LENGTH_LONG).show();
+            Toast.makeText(this, newFaceString, Toast.LENGTH_LONG).show();
+        }
+    }
+
     private void uploadStudent(Student student) {
         Toast.makeText(getApplicationContext(), "UploadStudent called", Toast.LENGTH_SHORT).show();
         assert student!=null;
@@ -382,13 +293,16 @@ public class FaceRecognitionActivity extends AppCompatActivity {
                 Toast.makeText(getApplicationContext(), "Uploaded photo successfully", Toast.LENGTH_SHORT).show();
                 StudentConfiguration studentConfiguration = MyUtils.getStudentConfigurationBuilder(getApplicationContext());
                 assert studentConfiguration != null;
-                studentConfiguration.student = student;
-                String updatedConfigString = MyUtils.getStringFromObject(studentConfiguration);
+                String finalConfigString = MyUtils.getString(getApplicationContext(),"STUDENTCONFIGBUILDER");
+
+
+               // studentConfiguration.student = student;
+               // String updatedConfigString = MyUtils.getStringFromObject(studentConfiguration);
                 //MyUtils.removeAll(getApplicationContext());
-                String faceinfoString = studentConfiguration.student.faceFeatureInfoString;
-                FaceFeatureInfo faceFeatureInfo = MyUtils.getFaceFeatureInfo(getApplicationContext(),faceinfoString);
-                com.nitap.attende.MainActivity.faceEngine.registerFaceFeature(faceFeatureInfo);
-                MyUtils.saveString(getApplicationContext(),"STUDENTCONFIG",updatedConfigString);
+                //String faceinfoString = studentConfiguration.student.faceFeatureInfoString;
+                //FaceFeatureInfo faceFeatureInfo = MyUtils.getFaceFeatureInfo(getApplicationContext(),faceinfoString);
+                //com.nitap.attende.MainActivity.faceEngine.registerFaceFeature(faceFeatureInfo);
+                //MyUtils.saveString(getApplicationContext(),"STUDENTCONFIG",updatedConfigString);
                 getStudentDetails();
 
             }
@@ -403,11 +317,16 @@ public class FaceRecognitionActivity extends AppCompatActivity {
     }
 
     private void getStudentDetails() {
+        /*
         String configString = MyUtils.getString(getApplicationContext(),"STUDENTBUILDERCONFIG");
         MyUtils.saveString(getApplicationContext(),"STUDENTCONFIG",configString);
         MyUtils.removeString(getApplicationContext(),"STUDENTBUILDERCONFIG");
-        assert MyUtils.getString(getApplicationContext(),"STUDENTCONFIG")!=null;
+        assert MyUtils.getStudentConfiguration(this)!=null;
         startActivity(new Intent(this,HomeActivity.class));
+        finish();
+        */
+        MyUtils.removeAll(getApplicationContext());
+        startActivity(new Intent(this,LoginActivity.class));
         finish();
     }
 

@@ -2,8 +2,10 @@ package com.nitap.attende.models;
 
 import android.util.ArraySet;
 
+import java.util.ArrayList;
+
 public class TeacherConfiguration {
     public Teacher teacher;
-    public ArraySet<Section> sectionSet;
+    //public ArrayList<Section> sectionSet;
 
 }

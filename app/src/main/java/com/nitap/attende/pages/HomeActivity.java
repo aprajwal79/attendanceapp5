@@ -29,6 +29,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.nitap.attende.LoginActivity;
 import com.nitap.attende.MyUtils;
+import com.nitap.attende.models.StudentConfiguration;
 import com.ttv.face.FaceFeatureInfo;
 import com.ttv.face.FaceResult;
 import com.ttv.facerecog.CameraActivity;
@@ -58,12 +59,14 @@ public class HomeActivity extends AppCompatActivity {
     ActivityHomeBinding binding;
     private GoogleSignInClient mGoogleSigninClient;
     ImageButton profileBtn;
+    StudentConfiguration studentConfiguration;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityHomeBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        studentConfiguration = MyUtils.getStudentConfiguration(this);
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.web_client_id))
@@ -76,6 +79,7 @@ public class HomeActivity extends AppCompatActivity {
         binding.aboutUsBtn.setOnClickListener(v -> {
             signOut();
         });
+        assert MyUtils.getStudentConfiguration(this)!=null;
 
         binding.attendanceBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -92,10 +96,19 @@ public class HomeActivity extends AppCompatActivity {
         profileBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(getApplicationContext(),ViewStudentProfileActivity.class));
+                StudentConfiguration studentConfiguration = MyUtils.getStudentConfiguration(getApplicationContext());
+                if(studentConfiguration!=null) {
+                    startActivity(new Intent(getApplicationContext(),ViewStudentProfileActivity.class));
+                }
             }
         });
 
+        TextView fname,lname;
+        fname = findViewById(R.id.fname);
+        lname = findViewById(R.id.lname);
+        String[] contents = studentConfiguration.student.name.split(" ");
+        fname.setText(contents[0]);
+        lname.setText(contents[1]);
 
 
 

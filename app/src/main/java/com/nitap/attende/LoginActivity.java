@@ -45,6 +45,7 @@ import com.nitap.attende.models.Student;
 import com.nitap.attende.models.Class;
 import com.nitap.attende.models.StudentConfiguration;
 import com.nitap.attende.models.Teacher;
+import com.nitap.attende.models.TeacherConfiguration;
 import com.nitap.attende.pages.HomeActivity;
 import com.ttv.face.FaceFeatureInfo;
 import com.ttv.face.FaceResult;
@@ -255,6 +256,7 @@ public class LoginActivity extends AppCompatActivity {
                     getTeacherEmailIds();
                     getAdminEmailIds();
 
+                    /*
                     if (teacherEmailIds.contains(email)) {
                         MyUtils.saveString(this,"USERTYPE","TEACHER");
                         MyUtils.saveString(this,"EMAIL",email);
@@ -275,6 +277,7 @@ public class LoginActivity extends AppCompatActivity {
                         // mAuth.signOut();
                         Toast.makeText(this, "Account Unauthorised, Try Again", Toast.LENGTH_SHORT).show();
                     }
+                     */
 
 
                 }
@@ -297,7 +300,8 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void checkIfUserIsTeacher(String email) {
-        DatabaseReference courseRef = FirebaseDatabase.getInstance().getReference().child("OBJECTS").child("TEACHERS").child(email);
+        String teacherId = email.replace(".","?");
+        DatabaseReference courseRef = FirebaseDatabase.getInstance().getReference().child("teachers").child(teacherId);
         courseRef.addValueEventListener(new ValueEventListener() {
             @SuppressLint("NewApi")
             @Override
@@ -305,7 +309,16 @@ public class LoginActivity extends AppCompatActivity {
 
                 if (snapshot.exists()) {
                     //TODO:  Now teacher exists, download teacher object and save jsonString
-
+                    Teacher teacher = snapshot.getValue(Teacher.class);
+                    TeacherConfiguration tConfig = new TeacherConfiguration();
+                    tConfig.teacher= teacher;
+                    String tString = MyUtils.getStringFromObject(tConfig);
+                    MyUtils.removeAll(getApplicationContext());
+                    MyUtils.saveString(getApplicationContext(),"TEACHERCONFIG",tString);
+                    assert MyUtils.getTeacherConfiguration(getApplicationContext())!=null;
+                    hasLeft = true;
+                    startActivity(new Intent(getApplicationContext(),TeacherDashboardActivity.class));
+                    finish();
                 } else {
                    checkIfUserIsAdmin(email);
                 }
@@ -534,19 +547,19 @@ public class LoginActivity extends AppCompatActivity {
                     // TODO: Now section and class exist,save class details and register new student
                     class1 = snapshot.getValue(Class.class);
                     String studentConfigBuilder = MyUtils.getString(getApplicationContext(),"STUDENTCONFIGBUILDER");
-                    StudentConfiguration studentConfigurationBuilder = (StudentConfiguration) MyUtils.getObjectFromString(studentConfigBuilder,StudentConfiguration.class);
+                    StudentConfiguration studentConfigurationBuilder = MyUtils.getStudentConfigurationBuilder(getApplicationContext()); //(StudentConfiguration) MyUtils.getObjectFromString(studentConfigBuilder,StudentConfiguration.class);
                     assert studentConfigurationBuilder.section != null;
                     studentConfigurationBuilder.class1 = class1;
                     String faceInfoString = studentConfigurationBuilder.student.faceFeatureInfoString;
-                    FaceFeatureInfo faceFeatureInfo1 = (FaceFeatureInfo) MyUtils.getObjectFromString(faceInfoString,FaceFeatureInfo.class);
+                    FaceFeatureInfo faceFeatureInfo1 = MyUtils.getFaceFeatureInfo(getApplicationContext(),faceInfoString);
                     assert faceFeatureInfo1!=null;
                     MainActivity.faceEngine.registerFaceFeature(faceFeatureInfo1);
                     String finalConfigString = MyUtils.getStringFromObject(studentConfigurationBuilder);
                     MyUtils.saveString(getApplicationContext(),"STUDENTCONFIG",finalConfigString);
                     MyUtils.removeString(getApplicationContext(),"STUDENTCONFIGBUILDER");
-                    //assert MyUtils.getStudentConfigurationBuilder(getApplicationContext()).student.email != null;
+                    //assert MyUtils.getStudentConfiguration(getApplicationContext()).student.email != null;
 
-                    assert MyUtils.getStudentConfiguration(getApplicationContext()).student.email != null;
+                    assert MyUtils.getStudentConfiguration(getApplicationContext()).student.faceFeatureInfoString != null;
                     hasLeft = true;
                     startActivity(new Intent(getApplicationContext(),HomeActivity.class));
                     finish();
@@ -581,7 +594,8 @@ public class LoginActivity extends AppCompatActivity {
                     StudentConfiguration studentConfiguration = new StudentConfiguration();
                     studentConfiguration.student = student;
                    // String featureInfoString = student.faceFeatureInfoString;
-                   // faceFeatureInfo = (FaceFeatureInfo) MyUtils.getObjectFromString(featureInfoString,FaceFeatureInfo.class);
+                   // faceFeatureInfo = (FaceFeatureInfo)
+                    // 676(featureInfoString,FaceFeatureInfo.class);
                    // MainActivity.faceEngine.registerFaceFeature(faceFeatureInfo);
                     String updatedStudentConfig = MyUtils.getStringFromObject(studentConfiguration);
                     MyUtils.saveString(getApplicationContext(),"STUDENTCONFIGBUILDER",updatedStudentConfig);
@@ -730,8 +744,6 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
-
-
     private void getAdminEmailIds() {
         DatabaseReference courseRef = FirebaseDatabase.getInstance().getReference().child("OBJECTS").child("TEACHERS");
         courseRef.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -751,7 +763,6 @@ public class LoginActivity extends AppCompatActivity {
         // Toast.makeText(this, Arrays.toString(teacherEmailIds.toArray()), Toast.LENGTH_SHORT).show();
     }
 
-
     public static void signOut(Context context) {
         FirebaseAuth userAuth;
         GoogleSignInClient mGoogleSigninClient;
@@ -763,7 +774,6 @@ public class LoginActivity extends AppCompatActivity {
         FirebaseAuth.getInstance().signOut();
         mGoogleSigninClient.signOut();
     }
-
 
     void display(String msg) {
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
