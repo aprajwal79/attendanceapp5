@@ -190,10 +190,10 @@ public class FaceRecognitionActivity extends AppCompatActivity {
                     Rect cropRect = Utils.getBestRect(bitmap.getWidth(), bitmap.getHeight(), ((FaceResult)faceResults.get(0)).rect);
                     final Bitmap headImg = Utils.crop(bitmap, cropRect.left, cropRect.top, cropRect.width(), cropRect.height(), 120, 120);
                     View inputView = LayoutInflater.from(this).inflate(layout.dialog_input_view, (ViewGroup)null, false);
-                    final EditText editText = (EditText)inputView.findViewById(id.et_user_name);
+                    final EditText editText = new EditText(this);
                     ImageView ivHead = (ImageView)inputView.findViewById(id.iv_head);
                     ivHead.setImageBitmap(headImg);
-                    editText.setText((CharSequence)userName);
+                    editText.setText("hello");
                    // Context var10002 = this.context;
                     //Intrinsics.checkNotNull(var10002);
                     AlertDialog var24 = (new AlertDialog.Builder(this)).setView(inputView).setPositiveButton((CharSequence)"OK", (DialogInterface.OnClickListener)null).setNegativeButton((CharSequence)"Cancel", (DialogInterface.OnClickListener)null).create();
