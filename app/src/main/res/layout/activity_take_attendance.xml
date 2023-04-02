@@ -27,7 +27,47 @@
     </LinearLayout>
 
     <Spinner
-        android:id="@+id/spinner_admin"
+        android:id="@+id/degree_sel"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginTop="10dp"
+        android:dropDownWidth="match_parent"
+        android:entries="@array/degrees"
+        android:spinnerMode="dropdown"
+        android:textAlignment="center" />
+
+    <Spinner
+        android:id="@+id/course_sel"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginTop="10dp"
+        android:dropDownWidth="match_parent"
+        android:entries="@array/branches"
+        android:spinnerMode="dropdown"
+        android:textAlignment="center" />
+
+    <Spinner
+        android:id="@+id/year_sel"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginTop="10dp"
+        android:dropDownWidth="match_parent"
+        android:entries="@array/sem"
+        android:spinnerMode="dropdown"
+        android:textAlignment="center" />
+
+    <Spinner
+        android:id="@+id/section_sel"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginTop="10dp"
+        android:dropDownWidth="match_parent"
+        android:entries="@array/section"
+        android:spinnerMode="dropdown"
+        android:textAlignment="center" />
+
+    <Spinner
+        android:id="@+id/subject_sel"
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:layout_marginTop="10dp"

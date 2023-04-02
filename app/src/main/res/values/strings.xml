@@ -7,6 +7,16 @@
     <string name="web_client_id">305352247527-llm2m9p0smvunhmj4aeushknk7uq1o0i.apps.googleusercontent.com</string>
 
 
+    <string-array name="my_dropdown_items">
+        <item>CS251</item>
+        <item>CS252</item>
+        <item>CS253</item>
+        <item>CS254</item>
+        <item>CS255</item>
+        <item>CS256</item>
+    </string-array>
+
+
     <string-array name="degrees">
         <item>BTECH</item>
         <item>MTECH</item>
@@ -32,8 +42,15 @@
     </string-array>
 
     <string-array name="sem">
-        <item>1</item>
-        <item>2</item>
+        <item>I</item>
+        <item>II</item>
+        <item>III</item>
+        <item>IV</item>
+        <item>V</item>
+        <item>VI</item>
+        <item>VII</item>
+        <item>VIII</item>
+
     </string-array>
 
     <string-array name="section">

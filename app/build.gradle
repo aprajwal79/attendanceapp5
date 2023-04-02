@@ -5,20 +5,20 @@ plugins {
 }
 
 android {
-    signingConfigs {
-        debug {
-            storeFile file('C:\\Users\\apraj\\Downloads\\key.jks')
-            storePassword 'password'
-            keyAlias 'key'
-            keyPassword 'password'
-        }
-        release {
-            storeFile file('C:\\Users\\apraj\\Downloads\\key.jks')
-            storePassword 'password'
-            keyAlias 'key'
-            keyPassword 'password'
-        }
-    }
+//    signingConfigs {
+//        debug {
+//            storeFile file('C:\\Users\\apraj\\Downloads\\key.jks')
+//            storePassword 'password'
+//            keyAlias 'key'
+//            keyPassword 'password'
+//        }
+//        release {
+//            storeFile file('C:\\Users\\apraj\\Downloads\\key.jks')
+//            storePassword 'password'
+//            keyAlias 'key'
+//            keyPassword 'password'
+//        }
+//    }
     compileSdk 31
 
     buildFeatures {

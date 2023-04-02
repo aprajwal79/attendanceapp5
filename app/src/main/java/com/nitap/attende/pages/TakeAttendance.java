@@ -11,7 +11,9 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.widget.Button;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -23,12 +25,20 @@ import androidx.recyclerview.widget.RecyclerView;
 
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import com.nitap.attende.EncryptActivity;
 import com.ttv.facerecog.R;
+import com.ttv.facerecog.databinding.ActivityAttendanceBinding;
+import com.ttv.facerecog.databinding.ActivityTakeAttendanceBinding;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -38,11 +48,14 @@ import java.util.Set;
 
 public class TakeAttendance extends AppCompatActivity {
 
+    ActivityTakeAttendanceBinding binding ;
+
     Set<String> myset;
     static List<String> presentDevice = new ArrayList<>();
     static ArrayList<String> mylist2 = new ArrayList<String>();
     private static final int REQUEST_ENABLE_BLUETOOTH = 1;
     private static final int REQUEST_LOCATION_PERMISSION = 2;
+    String sec_id;
 
     BluetoothAdapter bluetoothAdapter;
     private List<BluetoothDevice> bluetoothDevices = new ArrayList<>();
@@ -55,7 +68,7 @@ public class TakeAttendance extends AppCompatActivity {
             s1 = s1 + "    " + msg;
             if (statusTextView != null) {
                 statusTextView.setText(s1);
-                Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
+                //Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
             } else {
                 Toast.makeText(this, "STATUS_TEXT_VIEW IS NULL", Toast.LENGTH_SHORT).show();
             }
@@ -65,9 +78,7 @@ public class TakeAttendance extends AppCompatActivity {
 
     }
 
-    static void display(Context context, String msg) {
-        Toast.makeText(context, msg, Toast.LENGTH_LONG).show();
-    }
+
 
     void display(String msg) {
         Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
@@ -82,9 +93,12 @@ public class TakeAttendance extends AppCompatActivity {
             if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 t(device.getName());
+
                 if (!bluetoothDevices.contains(device)) {
+                    String decryptedName = EncryptActivity.decrypt(device.getName());
+
                     bluetoothDevices.add(device);
-                    presentDevice.add(device.getName());
+                    presentDevice.add(decryptedName);
                     // devicesAdapter.notifyDataSetChanged();
                 }
 
@@ -115,20 +129,19 @@ public class TakeAttendance extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_take_attendance);
+
+        binding = ActivityTakeAttendanceBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
         Button scanButton = findViewById(R.id.take_attendance_btn);
 
         scanButton.setOnClickListener(v -> {
             scanBluetooth();
 
+
         });
 
     }
-
-    private void sleep(int i) {
-    }
-
 
     void scanBluetooth(){
         try {
@@ -239,33 +252,73 @@ public class TakeAttendance extends AppCompatActivity {
         }
     }
 
+    private String checkSection(){
+
+        String degree = binding.degreeSel.getSelectedItem().toString();
+        String course = binding.courseSel.getSelectedItem().toString();
+        String year = binding.yearSel.getSelectedItem().toString();
+        String section = binding.sectionSel.getSelectedItem().toString();
+
+        String sec_info = degree + course + year + section;
+
+        return sec_info;
+
+
+    }
+
+
 
     private void postResult(){
 
         final DatabaseReference courseRef = FirebaseDatabase.getInstance().getReference().child("course");
-        final String saveCurrentDate;
+        final DatabaseReference secRef = FirebaseDatabase.getInstance().getReference().child("section");
+        final DatabaseReference seRef = FirebaseDatabase.getInstance().getReference().child("sections");
 
+        final String saveCurrentDate, saveCurrentMonth, saveCurrentTime;
+        String section_str = checkSection();
+        String subject = binding.subjectSel.getSelectedItem().toString();
 
 
         Calendar calendar = Calendar.getInstance();
-        SimpleDateFormat currentDate = new SimpleDateFormat("MMMM dd, yyyy");
+        SimpleDateFormat currentDate = new SimpleDateFormat("MMMM,dd yyyy");
         saveCurrentDate = currentDate.format(calendar.getTime());
 
-        final HashMap sessionMap = new HashMap<>();
+        SimpleDateFormat currentMonth = new SimpleDateFormat("MMMM");
+        saveCurrentMonth = currentMonth.format(calendar.getTime());
 
-        sessionMap.put("session_id", "shamlal");
-        sessionMap.put("date", saveCurrentDate);
-        sessionMap.put("absentees", presentDevice);
-        sessionMap.put("presentess", presentDevice);
+        SimpleDateFormat currentTime = new SimpleDateFormat("hmma");
+        saveCurrentTime = currentTime.format(calendar.getTime());
+
+        String sessionId = saveCurrentDate+saveCurrentTime;
 
 
-        courseRef.child("cs201").child("section_a").child(saveCurrentDate).updateChildren(sessionMap)
-                .addOnCompleteListener(new OnCompleteListener() {
-                    @Override
-                    public void onComplete(@NonNull Task task) {
-                        Toast.makeText(TakeAttendance.this, "Submitted successfully", Toast.LENGTH_SHORT).show();
-                    }
-                });
+
+        secRef.child(section_str).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+
+                if(snapshot.exists()){
+                    sec_id = snapshot.child("section_id").getValue().toString();
+
+                    Intent intent = new Intent(TakeAttendance.this, DisplayAttendance.class);
+                    intent.putStringArrayListExtra("rollList", (ArrayList<String>) presentDevice);
+                    intent.putExtra("sectionId", section_str);
+                    intent.putExtra("sectionCode", sec_id);
+                    intent.putExtra("subject", subject);
+                    startActivity(intent);
+
+//
+                }else{
+                    Toast.makeText(TakeAttendance.this, "section not found", Toast.LENGTH_SHORT).show();
+                }
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
 
 
     }

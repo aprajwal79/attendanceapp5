@@ -27,7 +27,9 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.nitap.attende.pages.AttendanceActivity;
 import com.nitap.attende.pages.HomeActivity;
+import com.nitap.attende.pages.TakeAttendance;
 import com.ttv.facerecog.R;
 
 import java.util.Arrays;
@@ -143,15 +145,16 @@ public class LoginActivity extends AppCompatActivity {
            return;
        }
 
+       startActivity(new Intent(LoginActivity.this, AttendanceActivity.class));
+       finish();
+
 
         //Toast.makeText(this, "UPDATE UI CA
         // LLED", Toast.LENGTH_SHORT).show();
         // FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser!=null) {
             String email = currentUser.getEmail();
-           // Toast.makeText(this, "EMAIL: "+email, Toast.LENGTH_SHORT).show();
             String[] contents = Objects.requireNonNull(email).split("@");
-           // Toast.makeText(this, contents[0]+"$"+contents[1], Toast.LENGTH_SHORT).show();
             if (contents.length == 2 && Objects.equals(contents[1], "student.nitandhra.ac.in")) {
                 // USERTYPE STUDENT
                 if (!Objects.equals(MyUtils.getString(this, "STUDENT"), "EMPTY")) {
@@ -292,7 +295,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private void checkIfSectionExists(String rollno) {
         String sectionCode = rollno.substring(0,4);
-        DatabaseReference courseRef = FirebaseDatabase.getInstance().getReference().child("OBJECTS").child("SECTIONS").child(sectionCode);
+        DatabaseReference courseRef = FirebaseDatabase.getInstance().getReference().child("SECTIONS").child(sectionCode);
         courseRef.addValueEventListener(new ValueEventListener() {
             @SuppressLint("NewApi")
             @Override
@@ -315,7 +318,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void checkIfStudentExists(String rollno) {
-        DatabaseReference courseRef = FirebaseDatabase.getInstance().getReference().child("OBJECTS").child("STUDENTS").child(rollno);
+        DatabaseReference courseRef = FirebaseDatabase.getInstance().getReference().child("students").child(rollno);
         courseRef.addValueEventListener(new ValueEventListener() {
             @SuppressLint("NewApi")
             @Override

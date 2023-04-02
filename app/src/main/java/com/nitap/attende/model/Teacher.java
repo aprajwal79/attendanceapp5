@@ -1,6 +1,4 @@
-package com.nitap.attende.Model;
-
-import java.util.HashMap;
+package com.nitap.attende.model;
 
 public class Teacher {
     public String name,branch,email;

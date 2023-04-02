@@ -14,7 +14,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.nitap.attende.Model.Student;
+import com.nitap.attende.model.Student;
 
 import java.io.IOException;
 import java.util.Iterator;

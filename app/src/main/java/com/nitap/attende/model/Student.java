@@ -1,4 +1,4 @@
-package com.nitap.attende.Model;
+package com.nitap.attende.model;
 
 import com.ttv.face.FaceFeatureInfo;
 

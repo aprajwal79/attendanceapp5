@@ -2,6 +2,7 @@ package com.nitap.attende.pages;
 
 import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -12,18 +13,21 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.nitap.attende.EncryptActivity;
 import com.ttv.facerecog.databinding.ActivityAttendanceBinding;
 
 public class AttendanceActivity extends AppCompatActivity {
 
     ActivityAttendanceBinding binding;
-    final String bt_name = "CkyM8zssrZQTUzW6cFjFzzroaw8y/ZeB4hxEtssR33k=";
+    String bt_name = "421243";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityAttendanceBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        bt_name = EncryptActivity.encrypt(bt_name);
 
         binding.attendanceBtn.setOnClickListener(v -> {
             Boolean flag = setBluetooth(true);
@@ -66,14 +70,19 @@ public class AttendanceActivity extends AppCompatActivity {
                                             return;
                                         }
                                         bluetoothAdapter.setName(bt_name);
-                                        if (bt_name.equalsIgnoreCase(bluetoothAdapter.getName()))
+                                        if (bt_name.equalsIgnoreCase(bluetoothAdapter.getName())){
                                             Toast.makeText(AttendanceActivity.this, bluetoothAdapter.getName() +"changed", Toast.LENGTH_SHORT).show();
+
+                                        }
+
+
 
                                     }
                                     if ((bt_name.equalsIgnoreCase(bluetoothAdapter.getName()) == false) && (System.currentTimeMillis() < lTimeToGiveUp_ms))
                                     {
                                         myTimerHandler.postDelayed(this, 500);
                                         if (bluetoothAdapter.isEnabled())
+                                            //Toast.makeText(AttendanceActivity.this, bluetoothAdapter., Toast.LENGTH_SHORT).show();
                                             Toast.makeText(AttendanceActivity.this, "Update BT Name: waiting on BT Enable", Toast.LENGTH_SHORT).show();
 
                                         else

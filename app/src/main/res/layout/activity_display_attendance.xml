@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
+    android:padding="10dp"
+    tools:context="com.nitap.attende.pages.DisplayAttendance">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center_horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:text="List of Absentees"
+                android:textColor="@color/black"
+                android:textSize="28sp"
+                android:textStyle="bold">
+
+            </TextView>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/absentees_list"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginBottom="40dp"
+                tools:listitem="@layout/roll_list" />
+
+
+
+
+        </LinearLayout>
+
+
+    </ScrollView>
+
+    <Button
+        android:id="@+id/submit_attendance"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:backgroundTint="#072909"
+        android:padding="10dp"
+        android:text="Submit"
+        android:textColor="@color/white"
+        android:layout_gravity="center|bottom"
+        android:textStyle="bold">
+
+    </Button>
+
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+

@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Toast;
 
+import com.nitap.attende.pages.TakeAttendance;
 import com.ttv.face.FaceEngine;
 import com.ttv.facerecog.DBHelper;
 import com.ttv.facerecog.R;

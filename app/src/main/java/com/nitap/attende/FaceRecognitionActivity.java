@@ -95,8 +95,7 @@ public class FaceRecognitionActivity extends AppCompatActivity {
         submitButton = findViewById(id.button_next);
 
         btnRegister = findViewById(id.upload_btn);
-        submitButton.setEnabled(false);
-        btnRegister.setEnabled(false);
+        submitButton.setEnabled(true);
 
 
         btnRegister.setOnClickListener(new View.OnClickListener() {
