@@ -11,7 +11,7 @@ import com.ttv.facerecog.R;
 
 public class AdminActivity extends AppCompatActivity {
 
-    Button addClass,addSection;
+    Button addClass,addSection,addTeacher,addAdmin;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -19,7 +19,7 @@ public class AdminActivity extends AppCompatActivity {
         setContentView(R.layout.activity_admin);
         addClass = findViewById(R.id.button1);
         addSection = findViewById(R.id.button4);
-
+        addTeacher = findViewById(R.id.button7);
 
         addClass.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -31,6 +31,12 @@ public class AdminActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 startActivity(new Intent(getApplicationContext(),AddSectionActivity.class));
+            }
+        });
+        addTeacher.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(getApplicationContext(),AddTeacherActivity.class));
             }
         });
 

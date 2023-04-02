@@ -1,25 +1,19 @@
 package com.nitap.attende;
 
 import android.annotation.SuppressLint;
+import android.app.DownloadManager;
+import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.Rect;
+import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.Bundle;
-import android.text.TextUtils;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
+import android.os.Environment;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.collection.ArraySet;
 
@@ -29,6 +23,8 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
@@ -40,6 +36,10 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.nitap.attende.models.MyConfiguration;
+import com.nitap.attende.models.MyStudent;
 import com.nitap.attende.models.Section;
 import com.nitap.attende.models.Student;
 import com.nitap.attende.models.Class;
@@ -48,29 +48,20 @@ import com.nitap.attende.models.Teacher;
 import com.nitap.attende.models.TeacherConfiguration;
 import com.nitap.attende.pages.HomeActivity;
 import com.ttv.face.FaceFeatureInfo;
-import com.ttv.face.FaceResult;
 import com.ttv.facerecog.DBHelper;
-import com.ttv.facerecog.FaceEntity;
-import com.ttv.facerecog.ImageRotator;
 import com.ttv.facerecog.R;
-import com.ttv.facerecog.Utils;
-
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-
-import kotlin.jvm.internal.Intrinsics;
 
 
 public class LoginActivity extends AppCompatActivity {
 
+    long mFileDownloadedId;
     public static boolean hasLeft = false;
     private static final int RC_SIGN_IN = 123;
     private GoogleSignInClient mGoogleSignInClient;
@@ -91,12 +82,17 @@ public class LoginActivity extends AppCompatActivity {
     public static String facetagForFaceInfo ;
     public static int searchIdForFaceInfo ;
     LinearLayout signInButton;
+    public static Uri myUri;
+    public static String myRollno;
+    public static boolean shouldTrain = false;
+    public static boolean isEnabled = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         hasLeft = false;
+        MyUtils.removeConfigurationBuilder(this);
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.web_client_id))
                 .requestEmail()
@@ -105,11 +101,23 @@ public class LoginActivity extends AppCompatActivity {
         mGoogleSignInClient.signOut();
 
         mAuth = FirebaseAuth.getInstance();
+        if(mAuth.getCurrentUser()==null) {
+            isEnabled = true;
+            } else {
+            isEnabled = false;
+        }
 
         signInButton = findViewById(R.id.google_btn);
 
         signInButton.setOnClickListener(v -> {
-            signIn();
+            if(isEnabled) {
+                isEnabled = false;
+                display("Verifying your details, please wait");
+                signIn();
+            } else {
+                display("Processing, try again later");
+            }
+
         });
     }
 
@@ -119,9 +127,8 @@ public class LoginActivity extends AppCompatActivity {
         // Check if user is signed in (non-null) and update UI accordingly.
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser != null) {
-
+            updateUI(currentUser);
         }
-        updateUI(currentUser);
 
     }
 
@@ -138,7 +145,7 @@ public class LoginActivity extends AppCompatActivity {
 
 
         if (requestCode == RC_SIGN_IN && mAuth.getCurrentUser()==null)  {
-            Toast.makeText(getApplicationContext(), "Processing, please wait", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), "Got Google account", Toast.LENGTH_SHORT).show();
             Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
             try {
 
@@ -154,7 +161,8 @@ public class LoginActivity extends AppCompatActivity {
             } catch (ApiException e) {
                 // Google Sign In failed, update UI appropriately
                 Toast.makeText(this, ""+ e, Toast.LENGTH_SHORT).show();
-                updateUI(null);
+                isEnabled = true;
+                //updateUI(null);
             }
         }
 
@@ -178,7 +186,8 @@ public class LoginActivity extends AppCompatActivity {
                             // If sign in fails, display a message to the user.
                             Toast.makeText(LoginActivity.this, "Authentication failed.",
                                     Toast.LENGTH_SHORT).show();
-                            updateUI(null);
+                            //updateUI(null);
+                            isEnabled = true;
                         }
 
                     }
@@ -193,10 +202,7 @@ public class LoginActivity extends AppCompatActivity {
            return;
        }
 
-
-        //Toast.makeText(this, "UPDATE UI CA
-        // LLED", Toast.LENGTH_SHORT).show();
-        // FirebaseUser currentUser = mAuth.getCurrentUser();
+       /*
         if (currentUser!=null) {
             String email = currentUser.getEmail();
            // Toast.makeText(this, "EMAIL: "+email, Toast.LENGTH_SHORT).show();
@@ -204,15 +210,15 @@ public class LoginActivity extends AppCompatActivity {
            // Toast.makeText(this, contents[0]+"$"+contents[1], Toast.LENGTH_SHORT).show();
             if (contents.length == 2 && Objects.equals(contents[1], "student.nitandhra.ac.in")) {
                 // USERTYPE STUDENT
-                if (!Objects.equals(MyUtils.getString(this, "STUDENTCONFIG"), "EMPTY")) {
+                if (MyUtils.getConfiguration(this).student!=null) {
                     MyUtils.removeString(this,"TEACHERCONFIG");
                     MyUtils.removeString(this,"ADMINCONFIG");
                     MyUtils.removeString(this,"TEACHERCONFIGBUILDER");
                     MyUtils.removeString(this,"ADMINCONFIGBUILDER");
                     MyUtils.removeString(this,"STUDENTCONFIGBUILDER");
-                    /*MyUtils.removeString(this,"USERTYPE");
+                    MyUtils.removeString(this,"USERTYPE");
                     MyUtils.removeString(this,"EMAIL");
-                    MyUtils.removeString(this,"NAME");*/
+                    MyUtils.removeString(this,"NAME");
                     assert MyUtils.getStudentConfiguration(getApplicationContext()).student.email!=null;
 
                     hasLeft = true;
@@ -277,7 +283,7 @@ public class LoginActivity extends AppCompatActivity {
                         // mAuth.signOut();
                         Toast.makeText(this, "Account Unauthorised, Try Again", Toast.LENGTH_SHORT).show();
                     }
-                     */
+
 
 
                 }
@@ -290,7 +296,39 @@ public class LoginActivity extends AppCompatActivity {
         } else {
             Toast.makeText(this, "Please login to continue", Toast.LENGTH_SHORT).show();
         }
+        */
 
+        MyConfiguration myConfiguration = MyUtils.getConfiguration(this);
+
+        if(myConfiguration==null){
+            //determine email and register
+            String email = currentUser.getEmail();
+            String[] contents = Objects.requireNonNull(email).split("@");
+            if (contents.length == 2 && Objects.equals(contents[1], "student.nitandhra.ac.in")) {
+                checkIfStudentExists();
+            } else {
+                //checkIfUserIsTeacher();
+            }
+
+
+
+
+        }else if(myConfiguration.student!=null && myConfiguration.teacher==null  && myConfiguration.admin==null){
+            hasLeft = true;
+            startActivity(new Intent(this,HomeActivity.class));
+            finish();
+
+        }else if(myConfiguration.student==null && myConfiguration.teacher!=null  && myConfiguration.admin==null) {
+            hasLeft = true;
+            startActivity(new Intent(this,TeacherDashboardActivity.class));
+            finish();
+
+        }else if(myConfiguration.student==null && myConfiguration.teacher==null  && myConfiguration.admin!=null){
+            hasLeft = true;
+            startActivity(new Intent(this,AdminActivity.class));
+            finish();
+
+        }
 
 
 
@@ -362,8 +400,8 @@ public class LoginActivity extends AppCompatActivity {
 
     }
 
-    private void checkIfSectionExists(String rollno) {
-        String sectionId = rollno.substring(0,4);
+    private void checkIfSectionExists() {
+        String sectionId = mAuth.getCurrentUser().getEmail().split("@")[0].substring(0,4);
         Toast.makeText(this,"sec id " + sectionId, Toast.LENGTH_SHORT).show();
         DatabaseReference courseRef = FirebaseDatabase.getInstance().getReference().child("sections").child(sectionId);
         courseRef.addValueEventListener(new ValueEventListener() {
@@ -374,20 +412,26 @@ public class LoginActivity extends AppCompatActivity {
                 if (snapshot.exists()) {
                     Toast.makeText(getApplicationContext(), "section exists", Toast.LENGTH_SHORT).show();
                     // TODO: Now section details exist, hence get section details, then class details and redirect to photo upload
-                    section = snapshot.getValue(Section.class);
-                    String studentConfigBuilder = MyUtils.getString(getApplicationContext(),"STUDENTCONFIGBUILDER");
-                    StudentConfiguration studentConfigurationBuilder = MyUtils.getStudentConfigurationBuilder(getApplicationContext());//(StudentConfiguration) MyUtils.getObjectFromString(studentConfigBuilder,StudentConfiguration.class);
-                    assert studentConfigurationBuilder != null;
-                    studentConfigurationBuilder.section = section;
-                    String updatedStudentConfig = MyUtils.getStringFromObject(studentConfigurationBuilder);
-                    MyUtils.saveString(getApplicationContext(),"STUDENTCONFIGBUILDER",updatedStudentConfig);
-                    assert MyUtils.getStudentConfigurationBuilder(getApplicationContext()).section!=null;
-                    checkIfClassExists(studentConfigurationBuilder.section.classId);
+                    Section section = snapshot.getValue(Section.class);
+                    MyConfiguration myConfiguration = new MyConfiguration();
+                    myConfiguration.student = new Student();
+                    myConfiguration.teacher =null;
+                    myConfiguration.admin = null;
+
+                    myConfiguration.student.max = section.max;
+                    myConfiguration.student.startRollno = section.startRollno;
+                    myConfiguration.student.endRollno = section.endRollno;
+                    myConfiguration.student.sectionId = section.sectionId;
+                    myConfiguration.student.sectionName = section.sectionName;
+                    myConfiguration.student.classId = section.classId;
+
+                    MyUtils.saveConfigurationBuilder(getApplicationContext(),myConfiguration);
+                    checkIfClassExists();
+
 
                 } else {
                     // TODO: Now section details not found, display error
-                    MyUtils.removeAll(getApplicationContext());
-                    Toast.makeText(getApplicationContext(), "Section not found, contact admin", Toast.LENGTH_SHORT).show();
+                   Toast.makeText(getApplicationContext(), "Section not found, contact admin", Toast.LENGTH_SHORT).show();
 
                 }
                 courseRef.removeEventListener(this);
@@ -401,11 +445,10 @@ public class LoginActivity extends AppCompatActivity {
 
     }
 
-    private void checkIfClassExists(String classId) {
-        if(classId == null) {
-            Toast.makeText(this, "Class id null", Toast.LENGTH_SHORT).show();
-            return;
-        }
+    private void checkIfClassExists() {
+        MyConfiguration myConfiguration = MyUtils.getConfigurationBuilder(this);
+        String classId = myConfiguration.student.classId;
+
         DatabaseReference courseRef = FirebaseDatabase.getInstance().getReference().child("classes").child(classId);
         courseRef.addValueEventListener(new ValueEventListener() {
             @SuppressLint("NewApi")
@@ -413,17 +456,19 @@ public class LoginActivity extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot snapshot) {
 
                 if (snapshot.exists()) {
-                    Toast.makeText(getApplicationContext(), "", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), "class exists", Toast.LENGTH_SHORT).show();
                     // TODO: Now section and class exist,save class details and register new student
-                    class1 = snapshot.getValue(Class.class);
-                    String studentConfigBuilder = MyUtils.getString(getApplicationContext(),"STUDENTCONFIGBUILDER");
-                    StudentConfiguration studentConfigurationBuilder = MyUtils.getStudentConfigurationBuilder(getApplicationContext());//(StudentConfiguration) MyUtils.getObjectFromString(studentConfigBuilder,StudentConfiguration.class);
-                    assert studentConfigurationBuilder != null;
-                    studentConfigurationBuilder.class1 = class1;
-                    String updatedConfigString = MyUtils.getStringFromObject(studentConfigurationBuilder);
-                    MyUtils.saveString(getApplicationContext(),"STUDENTCONFIGBUILDER",updatedConfigString);
-                    assert MyUtils.getStudentConfigurationBuilder(getApplicationContext()).class1!=null;
+                    Class class1 = snapshot.getValue(Class.class);
+                    myConfiguration.student.courses = class1.courses;
+                    myConfiguration.student.degree = class1.degree;
+                    myConfiguration.student.branch = class1.branch;
+                    myConfiguration.student.year = class1.year;
+                    myConfiguration.student.sem = class1.sem;
+
+                    MyUtils.saveConfigurationBuilder(getApplicationContext(),myConfiguration);
+
                     initialiseStudentCredentials();
+
                     /*
                     hasLeft = true;
                     startActivity(new Intent(LoginActivity.this, FaceRecognitionActivity.class));
@@ -439,7 +484,7 @@ public class LoginActivity extends AppCompatActivity {
 
                 } else {
                     // TODO: Now section found but no class found, display error message
-                    MyUtils.removeAll(getApplicationContext());
+                    //MyUtils.removeAll(getApplicationContext());
                     Toast.makeText(LoginActivity.this, "Class not found, contact admin", Toast.LENGTH_SHORT).show();
                 }
                 courseRef.removeEventListener(this);
@@ -455,7 +500,19 @@ public class LoginActivity extends AppCompatActivity {
 
     private void initialiseStudentCredentials() {
 
-        String email = Objects.requireNonNull(mAuth.getCurrentUser()).getEmail();
+        String email = mAuth.getCurrentUser().getEmail();
+
+        MyConfiguration myConfiguration = MyUtils.getConfigurationBuilder(this);
+        myConfiguration.student.email = mAuth.getCurrentUser().getEmail();
+        myConfiguration.student.rollno = mAuth.getCurrentUser().getEmail().split("@")[0];
+        myConfiguration.student.regno = null;
+        myConfiguration.student.name = mAuth.getCurrentUser().getDisplayName();
+
+        MyUtils.saveConfigurationBuilder(getApplicationContext(),myConfiguration);
+
+        uploadPhoto();
+
+        /*
         assert email != null;
         String[] contents = email.split("@");
         String rollno = contents[0];
@@ -487,15 +544,20 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
         */
+
+    }
+
+    private void uploadPhoto() {
         Toast.makeText(getApplicationContext(), "Upload photo to complete the registration", Toast.LENGTH_SHORT).show();
-        assert MyUtils.getStudentConfigurationBuilder(getApplicationContext()) != null;
         hasLeft = true;
+        rollno = mAuth.getCurrentUser().getEmail().split("@")[0];
         startActivity(new Intent(this,FaceRecognitionActivity.class));
         finish();
     }
 
-    private void fetchSectionDetails(String rollno) {
-        String sectionId = rollno.substring(0,4);
+    private void fetchSectionDetails() {
+        String sectionId = mAuth.getCurrentUser().getEmail().split("@")[0].substring(0,4);
+
         Toast.makeText(this, "section id "+ sectionId, Toast.LENGTH_SHORT).show();
         DatabaseReference courseRef = FirebaseDatabase.getInstance().getReference().child("sections").child(sectionId);
         courseRef.addValueEventListener(new ValueEventListener() {
@@ -503,24 +565,17 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
 
-                if (snapshot.exists()) {
-                    // TODO: CONTINUE HERE
                     // TODO: Now section details exist, hence get section details, then class details and register face engine
-                    section = snapshot.getValue(Section.class);
-                    //String studentConfigBuilder = MyUtils.getString(getApplicationContext(),"STUDENTCONFIGBUILDER");
-                    StudentConfiguration studentConfigurationBuilder = MyUtils.getStudentConfigurationBuilder(getApplicationContext());//(StudentConfiguration) MyUtils.getObjectFromString(studentConfigBuilder,StudentConfiguration.class);
-                    assert studentConfigurationBuilder != null;
-                    studentConfigurationBuilder.section = section;
-                    String updatedStudentConfig = MyUtils.getStringFromObject(studentConfigurationBuilder);
-                    MyUtils.saveString(getApplicationContext(),"STUDENTCONFIGBUILDER",updatedStudentConfig);
-                    fetchClassDetails(studentConfigurationBuilder.section.classId);
+                    Section section = snapshot.getValue(Section.class);
+                    MyConfiguration myConfiguration = MyUtils.getConfigurationBuilder(getApplicationContext());
+                    myConfiguration.student.sectionName = section.sectionName;
+                    myConfiguration.student.classId = section.classId;
+                    myConfiguration.student.max = section.max;
+                    myConfiguration.student.startRollno = section.startRollno;
+                    myConfiguration.student.endRollno = section.endRollno;
+                    MyUtils.saveConfigurationBuilder(getApplicationContext(),myConfiguration);
 
-                } else {
-                    // TODO: Now section details not found, display error
-                    MyUtils.removeAll(getApplicationContext());
-                    Toast.makeText(getApplicationContext(), "Section not found, contact admin", Toast.LENGTH_SHORT).show();
-
-                }
+                    fetchClassDetails();
                 courseRef.removeEventListener(this);
             }
 
@@ -532,43 +587,25 @@ public class LoginActivity extends AppCompatActivity {
 
     }
 
-    private void fetchClassDetails(String classId) {
-        if(classId == null) {
-            Toast.makeText(this, "Class id null", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        DatabaseReference courseRef = FirebaseDatabase.getInstance().getReference().child("classes").child(classId);
+    private void fetchClassDetails() {
+        MyConfiguration myConfiguration = MyUtils.getConfigurationBuilder(getApplicationContext());
+        DatabaseReference courseRef = FirebaseDatabase.getInstance().getReference().child("classes").child(myConfiguration.student.classId);
         courseRef.addValueEventListener(new ValueEventListener() {
             @SuppressLint("NewApi")
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
 
-                if (snapshot.exists()) {
                     // TODO: Now section and class exist,save class details and register new student
-                    class1 = snapshot.getValue(Class.class);
-                    String studentConfigBuilder = MyUtils.getString(getApplicationContext(),"STUDENTCONFIGBUILDER");
-                    StudentConfiguration studentConfigurationBuilder = MyUtils.getStudentConfigurationBuilder(getApplicationContext()); //(StudentConfiguration) MyUtils.getObjectFromString(studentConfigBuilder,StudentConfiguration.class);
-                    assert studentConfigurationBuilder.section != null;
-                    studentConfigurationBuilder.class1 = class1;
-                    String faceInfoString = studentConfigurationBuilder.student.faceFeatureInfoString;
-                    FaceFeatureInfo faceFeatureInfo1 = MyUtils.getFaceFeatureInfo(getApplicationContext(),faceInfoString);
-                    assert faceFeatureInfo1!=null;
-                    MainActivity.faceEngine.registerFaceFeature(faceFeatureInfo1);
-                    String finalConfigString = MyUtils.getStringFromObject(studentConfigurationBuilder);
-                    MyUtils.saveString(getApplicationContext(),"STUDENTCONFIG",finalConfigString);
-                    MyUtils.removeString(getApplicationContext(),"STUDENTCONFIGBUILDER");
-                    //assert MyUtils.getStudentConfiguration(getApplicationContext()).student.email != null;
+                    Class class1 = snapshot.getValue(Class.class);
+                    myConfiguration.student.degree = class1.degree;
+                    myConfiguration.student.branch = class1.branch;
+                    myConfiguration.student.year = class1.year;
+                    myConfiguration.student.sem = class1.sem;
+                    myConfiguration.student.courses = class1.courses;
+                    MyUtils.saveConfigurationBuilder(getApplicationContext(),myConfiguration);
 
-                    assert MyUtils.getStudentConfiguration(getApplicationContext()).student.faceFeatureInfoString != null;
-                    hasLeft = true;
-                    startActivity(new Intent(getApplicationContext(),HomeActivity.class));
-                    finish();
+                    downloadPhoto();
 
-                } else {
-                    // TODO: Now section found but no class found, display error message
-                    MyUtils.removeAll(getApplicationContext());
-                    Toast.makeText(LoginActivity.this, "Class not found, contact admin", Toast.LENGTH_SHORT).show();
-                }
                 courseRef.removeEventListener(this);
             }
 
@@ -580,8 +617,236 @@ public class LoginActivity extends AppCompatActivity {
 
     }
 
+    private void downloadPhoto() {
+        String rollno = MyUtils.getConfigurationBuilder(this).student.rollno;
+        String url = MyUtils.getConfigurationBuilder(this).student.photoUrl;
+        FirebaseStorage storage = FirebaseStorage.getInstance();
+        StorageReference storageRef = storage.getReference().child("students").child(rollno);
 
-    private void checkIfStudentExists(String rollno) {
+        downloadFile(getApplicationContext(),rollno,".jpeg", Environment.DIRECTORY_DOWNLOADS,url);
+    }
+
+    private void registerFace(String rollno) {
+
+        FirebaseStorage storage = FirebaseStorage.getInstance();
+        StorageReference storageRef = storage.getReference().child("students").child(rollno);
+/*
+        try{
+            File localFile = File.createTempFile("images", "jpeg");
+
+            storageRef.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                    // Local temp file has been created
+                    Toast.makeText(getApplicationContext(), "Download success", Toast.LENGTH_SHORT).show();
+                    Context var10000 =  getApplicationContext(); //MainActivity.context;
+                    Uri var10001 = Uri.fromFile(localFile);
+                    Bitmap var20 = null;
+                    try {
+                        var20 = ImageRotator.getCorrectlyOrientedImage(getApplicationContext(), var10001);
+                    } catch (Throwable e) {
+                        e.printStackTrace();
+                        Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_SHORT).show();
+                    }
+                    Bitmap bitmap = var20;
+                    List var21 = MainActivity.faceEngine.detectFace(bitmap);
+                    final List faceResults = var21;
+                    Collection var6 = (Collection) faceResults;
+                    if (var6.size() == 1) {
+                        MainActivity.faceEngine.extractFeature(bitmap, true, faceResults);
+                        Rect cropRect = Utils.getBestRect(bitmap.getWidth(), bitmap.getHeight(), ((FaceResult)faceResults.get(0)).rect);
+                        final Bitmap headImg = Utils.crop(bitmap, cropRect.left, cropRect.top, cropRect.width(), cropRect.height(), 120, 120);
+                        String s = rollno;
+                        DBHelper var9 = MainActivity.mydb;
+                        int user_id = var9.insertUser(s, headImg, ((FaceResult)faceResults.get(0)).feature);
+                        FaceEntity face = new FaceEntity(user_id, s, headImg, ((FaceResult)faceResults.get(0)).feature);
+                        com.ttv.facerecog.MainActivity.Companion.getUserLists().add(face);
+                        FaceFeatureInfo faceFeatureInfo = new FaceFeatureInfo(user_id, ((FaceResult)faceResults.get(0)).feature);
+                        MainActivity.faceEngine.registerFaceFeature(faceFeatureInfo);
+
+                        Toast.makeText(getApplicationContext(), "ALL SUCCESS", Toast.LENGTH_SHORT).show();
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    }
+                    else {
+                        var6 = (Collection)faceResults;
+                        if (var6.size() > 1) {
+                            Toast.makeText(getApplicationContext(), (CharSequence)"Multiple face detected!", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(getApplicationContext(), (CharSequence)"No face detected!", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+
+
+
+
+
+
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception exception) {
+                    // Handle any errors
+                    Toast.makeText(getApplicationContext(),"Download Failed",Toast.LENGTH_SHORT).show();
+                }
+            });
+        } catch (Throwable e ){
+            e.printStackTrace();
+            Toast.makeText(LoginActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+*/      storageRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+            @Override
+            public void onSuccess(Uri uri) {
+                String url = uri.toString();
+                display("got download url");
+                downloadFile(getApplicationContext(),rollno,".jpeg", Environment.DIRECTORY_DOWNLOADS,url);
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                display("failed to get download url");
+            }
+        });
+
+
+/*
+        //assert bitmap!=null;
+        List var21 = MainActivity.faceEngine.detectFace(bitmap);
+        final List faceResults = var21;
+        Collection var6 = (Collection)faceResults;
+        if (var6.size() == 1) {
+            MainActivity.faceEngine.extractFeature(bitmap, true, faceResults);
+            Rect cropRect = Utils.getBestRect(bitmap.getWidth(), bitmap.getHeight(), ((FaceResult)faceResults.get(0)).rect);
+            final Bitmap headImg = Utils.crop(bitmap, cropRect.left, cropRect.top, cropRect.width(), cropRect.height(), 120, 120);
+            String s = studentConfigurationBuilder.student.rollno;
+            DBHelper var9 = MainActivity.mydb;
+            int user_id = var9.insertUser(s, headImg, ((FaceResult)faceResults.get(0)).feature);
+            FaceEntity face = new FaceEntity(user_id, s, headImg, ((FaceResult)faceResults.get(0)).feature);
+            com.ttv.facerecog.MainActivity.Companion.getUserLists().add(face);
+            FaceFeatureInfo faceFeatureInfo = new FaceFeatureInfo(user_id, ((FaceResult)faceResults.get(0)).feature);
+            MainActivity.faceEngine.registerFaceFeature(faceFeatureInfo);
+
+            Toast.makeText((Context) getApplicationContext(), (CharSequence)"Register succeed!", Toast.LENGTH_SHORT).show();
+*/
+        }
+
+    BroadcastReceiver onDownloadComplete = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            long downloadedID = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1);
+
+            if (downloadedID == mFileDownloadedId) {
+                String rollno = MyUtils.getConfigurationBuilder(getApplicationContext()).student.rollno;
+                display("Please ReUpload the same image "+rollno+".jpg to continue");
+
+                hasLeft=true;
+                startActivity(new Intent(getApplicationContext(),ReUploadActivity.class));
+                finish();
+            }
+        }
+    };
+
+    public void trainFace(Uri uri) {
+        myUri = uri;
+        myRollno = rollno;
+        startActivity(new Intent(getApplicationContext(),MainActivity2.class));
+
+        /*
+
+        display("Training the face");
+        Uri var10001 = uri;
+        Bitmap var20 = null;
+        try {
+            var20 = ImageRotator.getCorrectlyOrientedImage(MainActivity.context, var10001);
+        } catch (Throwable e) {
+            e.printStackTrace();
+            Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_SHORT).show();
+        }
+        Bitmap bitmap = var20;
+        assert bitmap!=null;
+        List var21 = MainActivity.faceEngine.detectFace(bitmap);
+        final List faceResults = var21;
+        Collection var6 = (Collection) faceResults;
+        if (var6.size() == 1) {
+            MainActivity.faceEngine.extractFeature(bitmap, true, faceResults);
+            Rect cropRect = Utils.getBestRect(bitmap.getWidth(), bitmap.getHeight(), ((FaceResult)faceResults.get(0)).rect);
+            final Bitmap headImg = Utils.crop(bitmap, cropRect.left, cropRect.top, cropRect.width(), cropRect.height(), 120, 120);
+            String s = rollno;
+            DBHelper var9 = MainActivity.mydb;
+            int user_id = var9.insertUser(s, headImg, ((FaceResult)faceResults.get(0)).feature);
+            FaceEntity face = new FaceEntity(user_id, s, headImg, ((FaceResult)faceResults.get(0)).feature);
+            com.ttv.facerecog.MainActivity.Companion.getUserLists().add(face);
+            FaceFeatureInfo faceFeatureInfo = new FaceFeatureInfo(user_id, ((FaceResult)faceResults.get(0)).feature);
+            MainActivity.faceEngine.registerFaceFeature(faceFeatureInfo);
+
+            Toast.makeText(getApplicationContext(), "ALL SUCCESS", Toast.LENGTH_SHORT).show();
+
+
+
+
+
+
+
+
+
+
+
+
+
+        }
+        else {
+            var6 = (Collection)faceResults;
+            if (var6.size() > 1) {
+                Toast.makeText(getApplicationContext(), (CharSequence)"Multiple face detected!", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(getApplicationContext(), (CharSequence)"No face detected!", Toast.LENGTH_SHORT).show();
+            }
+        }
+
+         */
+
+
+
+
+
+
+
+
+    }
+
+    private void downloadFile(Context applicationContext, String filename, String extension, String directoryDownloads, String url) {
+
+        DownloadManager downloadManager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
+        Uri uri = Uri.parse(url);
+        DownloadManager.Request request = new DownloadManager.Request(uri);
+        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+       // request.setDestinationInExternalFilesDir(applicationContext,"directory",filename+extension);
+        request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS,filename + extension);
+        request.allowScanningByMediaScanner();
+        request.setVisibleInDownloadsUi(true);
+        mFileDownloadedId = downloadManager.enqueue(request);
+        applicationContext.registerReceiver(onDownloadComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+
+    }
+
+
+
+
+    private void checkIfStudentExists() {
+        String[] contents = mAuth.getCurrentUser().getEmail().split("@");
+        String rollno = contents[0];
         DatabaseReference courseRef = FirebaseDatabase.getInstance().getReference().child("students").child(rollno);
         courseRef.addValueEventListener(new ValueEventListener() {
             @SuppressLint("NewApi")
@@ -589,22 +854,29 @@ public class LoginActivity extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot snapshot) {
 
                 if (snapshot.exists()) {
+
                     //TODO: Now student details already exist, hence get student object and store it;
-                    student = snapshot.getValue(Student.class);
-                    StudentConfiguration studentConfiguration = new StudentConfiguration();
-                    studentConfiguration.student = student;
-                   // String featureInfoString = student.faceFeatureInfoString;
-                   // faceFeatureInfo = (FaceFeatureInfo)
-                    // 676(featureInfoString,FaceFeatureInfo.class);
-                   // MainActivity.faceEngine.registerFaceFeature(faceFeatureInfo);
-                    String updatedStudentConfig = MyUtils.getStringFromObject(studentConfiguration);
-                    MyUtils.saveString(getApplicationContext(),"STUDENTCONFIGBUILDER",updatedStudentConfig);
-                    assert MyUtils.getStudentConfigurationBuilder(getApplicationContext()).student!=null;
-                    fetchSectionDetails(rollno);
+                    MyStudent student = snapshot.getValue(MyStudent.class);
+                    MyConfiguration myConfiguration = new MyConfiguration();
+                    myConfiguration.student = new Student();
+                    myConfiguration.teacher = null;
+                    myConfiguration.admin = null;
+
+                    myConfiguration.student.email = student.email;
+                    myConfiguration.student.rollno = student.rollno;
+                    myConfiguration.student.regno = student.regno;
+                    myConfiguration.student.name = student.name;
+                    myConfiguration.student.deviceHash = student.deviceHash;
+                    myConfiguration.student.sectionId = student.sectionId;
+                    myConfiguration.student.faceFeatureInfoString = student.faceFeatureInfoString;
+                    myConfiguration.student.photoUrl = student.photoUrl;
+                    MyUtils.saveConfigurationBuilder(getApplicationContext(),myConfiguration);
+
+                    fetchSectionDetails();
+
                 } else {
                     //TODO: Now student credentials are not found, ask for credentials and upload, also save jsonString
-                    assert rollno!=null;
-                   checkIfSectionExists(rollno);
+                    checkIfSectionExists();
                 }
                 courseRef.removeEventListener(this);
             }
@@ -655,6 +927,7 @@ public class LoginActivity extends AppCompatActivity {
 
         }
     */
+
     private void getListOfSections() {
         DatabaseReference courseRef = FirebaseDatabase.getInstance().getReference().child("OBJECTS").child("4212");
         courseRef.addValueEventListener(new ValueEventListener() {
@@ -779,8 +1052,11 @@ public class LoginActivity extends AppCompatActivity {
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
 
-
+    }
 
 
 

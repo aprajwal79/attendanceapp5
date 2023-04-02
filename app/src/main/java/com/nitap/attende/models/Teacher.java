@@ -8,5 +8,6 @@ public class Teacher {
     public String name,branch,email,teacherId;
     public ArrayList<String> courses;
     public ArrayList<SectionInfo> sectionInfos;
+    public ArrayList<String> sectionIds;
 
 }

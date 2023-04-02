@@ -45,8 +45,10 @@ uses-permission android:name="android.permission.BLUETOOTH_PRIVILEGED" />
     android:supportsRtl="true"
     android:theme="@style/Theme.TTVFaceRecog">
     <activity
-        android:name="com.nitap.attende.pages.ViewStudentProfileActivity"
-        android:exported="false" />
+        android:name="com.nitap.attende.AddTeacherActivity"
+        android:exported="false"
+
+        />
     <activity
         android:name=".MainActivity"
         android:exported="true">
@@ -56,6 +58,9 @@ uses-permission android:name="android.permission.BLUETOOTH_PRIVILEGED" />
             <category android:name="android.intent.category.LAUNCHER" />
         </intent-filter>
     </activity>
+    <activity
+        android:name="com.nitap.attende.pages.ViewStudentProfileActivity"
+        android:exported="false" />
     <activity
         android:name="com.nitap.attende.AdminActivity"
         android:exported="true" />
@@ -96,6 +101,11 @@ uses-permission android:name="android.permission.BLUETOOTH_PRIVILEGED" />
             android:value="" />
     </activity>
     <activity
+        android:name="com.nitap.attende.ReUploadActivity"
+        android:exported="false"
+
+        />
+    <activity
         android:name="com.nitap.attende.pages.HomeActivity"
         android:exported="true">
         <meta-data
@@ -117,9 +127,11 @@ uses-permission android:name="android.permission.BLUETOOTH_PRIVILEGED" />
         android:exported="false" />
     <activity
         android:name="com.nitap.attende.TeacherDashboardActivity"
-        android:exported="false"
+        android:exported="false" />
+    <activity
+        android:name="com.nitap.attende.MainActivity2"
+        android:exported="true" />
 
-        />
 </application>
 
 </manifest>

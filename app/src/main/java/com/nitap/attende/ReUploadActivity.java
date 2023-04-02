@@ -34,7 +34,6 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.nitap.attende.models.MyConfiguration;
-import com.nitap.attende.models.MyStudent;
 import com.nitap.attende.models.Student;
 import com.nitap.attende.models.StudentConfiguration;
 import com.nitap.attende.pages.HomeActivity;
@@ -50,17 +49,17 @@ import com.ttv.facerecog.Utils;
 
 import org.jetbrains.annotations.Nullable;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 
 import kotlin.jvm.internal.Intrinsics;
 
 
-public class FaceRecognitionActivity extends AppCompatActivity {
+public class ReUploadActivity extends AppCompatActivity {
 
     private DBHelper mydb ;
     public static ArrayList userLists;
@@ -71,7 +70,7 @@ public class FaceRecognitionActivity extends AppCompatActivity {
         userLists = new ArrayList(0);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_face_recognition);
-        Toast.makeText(getApplicationContext(), "FACE RECOGNITION ACTIVITY", Toast.LENGTH_SHORT).show();
+        Toast.makeText(getApplicationContext(), "RE UPLOAD ACTIVITY", Toast.LENGTH_SHORT).show();
         this.mydb = new DBHelper(this);
         this.mydb = new DBHelper((Context)this);
 
@@ -132,12 +131,12 @@ public class FaceRecognitionActivity extends AppCompatActivity {
 
         if (requestCode == 1 && resultCode == -1) {
             try {
-                Context var10000 = (Context)this;
+                Context var10000 = (Context) com.nitap.attende.MainActivity.context;
                 Uri var10001 = data != null ? data.getData() : null;
                 if (data == null) {
                     //display("DATA NULL");
                 } else {
-                   // display(data.getData().toString());
+                    display(data.getData().toString());
                 }
                 Intrinsics.checkNotNull(var10001);
                 Bitmap var20 = ImageRotator.getCorrectlyOrientedImage(var10000, var10001);
@@ -153,13 +152,13 @@ public class FaceRecognitionActivity extends AppCompatActivity {
                 if (var21 == null) {
                     //display("FACERESULT NULL");
                 } else {
-                    //display(Objects.toString(var21.size()));
+                    display(Objects.toString(var21.size()));
                 }
                 final List faceResults = var21;
                 Collection var6 = (Collection)faceResults;
                 if (var6.size() == 1) {
                     com.nitap.attende.MainActivity.faceEngine.extractFeature(bitmap, true, faceResults);
-                    display("FEATURES EXTRACTED");
+                   // display("FEATURES EXTRACTED");
                     // StringCompanionObject var7 = StringCompanionObject.INSTANCE;
                     String var8 = "User%03d";
                     Object[] var22 = new Object[1];
@@ -184,10 +183,10 @@ public class FaceRecognitionActivity extends AppCompatActivity {
                     // Context var10002 = this.context;
                     //Intrinsics.checkNotNull(var10002);
                     //AlertDialog var24 = (new AlertDialog.Builder(this)).setView(inputView).setPositiveButton((CharSequence)"OK", (DialogInterface.OnClickListener)null).setNegativeButton((CharSequence)"Cancel", (DialogInterface.OnClickListener)null).create();
-                   // Intrinsics.checkNotNullExpressionValue(var24, "AlertDialog.Builder(cont…                .create()");
+                    //Intrinsics.checkNotNullExpressionValue(var24, "AlertDialog.Builder(cont…                .create()");
                     //final AlertDialog confirmUpdateDialog = var24;
                     //confirmUpdateDialog.show();
-                    display("ALERT SHOWED");
+                    //display("ALERT SHOWED");
                     /*
                     confirmUpdateDialog.getButton(-1).setOnClickListener((View.OnClickListener)(new View.OnClickListener() {
                         public final void onClick(@Nullable View v) {
@@ -203,7 +202,7 @@ public class FaceRecognitionActivity extends AppCompatActivity {
 
                     // EditText var10000 = editText;
                     Intrinsics.checkNotNullExpressionValue(var10000, "editText");
-                    String s = LoginActivity.rollno;  //var10000.getText().toString();
+                    String s = MyUtils.getConfigurationBuilder(getApplicationContext()).student.rollno;//var10000.getText().toString();
 
                     boolean exists = false;
                     Iterator var5 = com.ttv.facerecog.MainActivity.Companion.getUserLists().iterator();
@@ -225,30 +224,44 @@ public class FaceRecognitionActivity extends AppCompatActivity {
 
                     FaceFeatureInfo faceFeatureInfo = new FaceFeatureInfo(user_id, ((FaceResult)faceResults.get(0)).feature);
 
-                    uploadPhoto(getApplicationContext(),data.getData(),LoginActivity.rollno,faceFeatureInfo);
+                    boolean isSamePhoto = false;
+                    isSamePhoto = test(faceFeatureInfo);
+                    if (!isSamePhoto) {
+                        display("Authentication failed, please upload the same photo");
 
-                    /*
-                    StudentConfiguration builderConfiguration = MyUtils.getStudentConfigurationBuilder(getApplicationContext());
-                    String bitmapString = MyUtils.getStringFromObject(bitmap);
-                    test(bitmapString);
-                    assert builderConfiguration != null;
-                    assert builderConfiguration.student!=null;
-                    builderConfiguration.student.bitmapString = bitmapString;
+                        return;
+                    }
 
-                    String updatedString = MyUtils.getStringFromObject(builderConfiguration);
-                    MyUtils.saveString(getApplicationContext(),"STUDENTCONFIGBUILDER",updatedString);
-                    Toast.makeText(getApplicationContext(), "Uploading the photo", Toast.LENGTH_SHORT).show();
-                    uploadStudent(builderConfiguration.student);
 
-                    //com.nitap.attende.MainActivity.faceEngine.registerFaceFeature(faceFeatureInfo);
-                   // confirmUpdateDialog.cancel();
-                    View var10 = findViewById(R.id.upload_btn);
-                    Intrinsics.checkNotNullExpressionValue(var10, "findViewById<Button>(R.id.btnVerify)");
+                    //StudentConfiguration builderConfiguration = MyUtils.getStudentConfigurationBuilder(getApplicationContext());
+                    //String bitmapString = MyUtils.getStringFromObject(bitmap);
+                    //test(bitmapString);
+                    //assert builderConfiguration != null;
+                    //assert builderConfiguration.student!=null;
+                    //builderConfiguration.student.bitmapString = bitmapString;
+
+                    //String updatedString = MyUtils.getStringFromObject(builderConfiguration);
+                    //MyUtils.saveString(getApplicationContext(),"STUDENTCONFIGBUILDER",updatedString);
+
+                    //uploadStudent(builderConfiguration.student);
+
+                    com.nitap.attende.MainActivity.faceEngine.registerFaceFeature(faceFeatureInfo);
+                    Toast.makeText(getApplicationContext(), "Registered with FaceEngine", Toast.LENGTH_SHORT).show();
+
+                    MyConfiguration myConfiguration = MyUtils.getConfigurationBuilder(getApplicationContext());
+                    MyUtils.saveConfiguration(getApplicationContext(),myConfiguration);
+                    MyUtils.removeConfigurationBuilder(getApplicationContext());
+
+                    startActivity(new Intent(getApplicationContext(), HomeActivity.class));
+                    finish();
+                    //confirmUpdateDialog.cancel();
+                    //View var10 = findViewById(R.id.upload_btn);
+                    //Intrinsics.checkNotNullExpressionValue(var10, "findViewById<Button>(R.id.btnVerify)");
                     //((Button)var10).setEnabled(com.ttv.facerecog.MainActivity.Companion.getUserLists().size() > 0);
                     //submitButton.setEnabled(true);
 
                     // END
-                     */
+
                 } else {
                     var6 = (Collection)faceResults;
                     if (var6.size() > 1) {
@@ -263,6 +276,7 @@ public class FaceRecognitionActivity extends AppCompatActivity {
         }
 
 
+
         /*
         if (requestCode == 1 && resultCode == -1) {
             try {
@@ -274,7 +288,6 @@ public class FaceRecognitionActivity extends AppCompatActivity {
                 LoginActivity.shouldTrain =true;
                 LoginActivity.myUri = file;
                 LoginActivity.myRollno = "421243";
-
                 startActivity(new Intent(getApplicationContext(), MainActivity.class));
                 Thread.sleep(5000);
                 StudentConfiguration builderConfiguration = MyUtils.getStudentConfigurationBuilder(getApplicationContext());
@@ -434,7 +447,7 @@ public class FaceRecognitionActivity extends AppCompatActivity {
                 var13.printStackTrace();
             }
         }
-*/
+            */
 
 
         super.onActivityResult(requestCode, resultCode, data);
@@ -443,86 +456,13 @@ public class FaceRecognitionActivity extends AppCompatActivity {
 
     }
 
-    private void uploadPhoto(Context applicationContext, Uri data, String rollno,FaceFeatureInfo faceFeatureInfo) {
-
-        FirebaseStorage storage = FirebaseStorage.getInstance();
-        StorageReference storageRef = storage.getReference();
-        StorageReference imagesRef = storageRef.child("students").child(rollno);
-        Uri file = data;
-        //StorageReference riversRef = storageRef.child("images/"+file.getLastPathSegment());
-        UploadTask uploadTask = imagesRef.putFile(file);
-        uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-            @Override
-            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                display("successfully uploaded photo to firebase storage");
-                imagesRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                    @Override
-                    public void onSuccess(Uri uri) {
-                        display("got download url");
-                        String photoUrl = uri.toString();
-                        String faceFeatureInfoString = MyUtils.getStringFromObject(faceFeatureInfo.getFeatureData());
-
-                        MyConfiguration myConfiguration = MyUtils.getConfigurationBuilder(getApplicationContext());
-                        myConfiguration.student.photoUrl = photoUrl;
-                        myConfiguration.student.faceFeatureInfoString = faceFeatureInfoString;
-
-                        MyUtils.saveConfigurationBuilder(getApplicationContext(),myConfiguration);
-
-                        MyStudent student = new MyStudent();
-                        student.email = myConfiguration.student.email;
-                        student.rollno = myConfiguration.student.rollno;
-                        student.regno = myConfiguration.student.regno;
-                        student.name = myConfiguration.student.name;
-                        student.deviceHash = myConfiguration.student.deviceHash;
-                        student.sectionId = myConfiguration.student.sectionId;
-                        student.faceFeatureInfoString = myConfiguration.student.faceFeatureInfoString;
-                        student.photoUrl = myConfiguration.student.photoUrl;
-
-                        DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child("students").child(student.rollno);
-                        ref.setValue(student).addOnSuccessListener(new OnSuccessListener<Void>() {
-                            @Override
-                            public void onSuccess(Void unused) {
-                                display("ALL SUCCESS");
-                                display("REGISTERED WITH FACE ENGINE");
-
-                                startActivity(new Intent(getApplicationContext(), HomeActivity.class));
-                                finish();
-
-                            }
-                        }).addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                display("couldnt upload Mystudent");
-                            }
-                        });
-
-
-                    }
-                }).addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        display("Failed to get download url");
-                    }
-                });
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                    display("couldnt upload photo to firebase storage");
-
-            }
-        });
-
-
-
-
-    }
-
-    private void test(String faceInfoString) {
-        FaceFeatureInfo faceinfo = MyUtils.getFaceFeatureInfo(this,faceInfoString);
-        String newFaceString = MyUtils.getStringFromObject(faceinfo);
-        if(faceInfoString.equals(newFaceString)) {
+    public boolean test(FaceFeatureInfo faceFeatureInfo) {
+        String reUploadedString = MyUtils.getStringFromObject(faceFeatureInfo.getFeatureData());
+        String existingString = MyUtils.getConfigurationBuilder(this).student.faceFeatureInfoString;
+        if(existingString.equals(reUploadedString)) {
             Toast.makeText(this, "BOTH SAME", Toast.LENGTH_SHORT).show();
+            return true;
+            /*
             FaceFeatureInfo newInfo = MyUtils.getFaceFeatureInfo(this,newFaceString);
             assert faceinfo != null;
             assert newInfo != null;
@@ -531,10 +471,10 @@ public class FaceRecognitionActivity extends AppCompatActivity {
             } else {
                 Toast.makeText(this, "FEATURE DATA IS DIFFERENT", Toast.LENGTH_SHORT).show();
             }
+             */
         } else {
             Toast.makeText(this, "BOTH DIFFERENT", Toast.LENGTH_SHORT).show();
-            Toast.makeText(this, faceInfoString, Toast.LENGTH_LONG).show();
-            Toast.makeText(this, newFaceString, Toast.LENGTH_LONG).show();
+            return false;
         }
     }
 
@@ -551,8 +491,8 @@ public class FaceRecognitionActivity extends AppCompatActivity {
                 String finalConfigString = MyUtils.getString(getApplicationContext(),"STUDENTCONFIGBUILDER");
 
 
-               // studentConfiguration.student = student;
-               // String updatedConfigString = MyUtils.getStringFromObject(studentConfiguration);
+                // studentConfiguration.student = student;
+                // String updatedConfigString = MyUtils.getStringFromObject(studentConfiguration);
                 //MyUtils.removeAll(getApplicationContext());
                 //String faceinfoString = studentConfiguration.student.faceFeatureInfoString;
                 //FaceFeatureInfo faceFeatureInfo = MyUtils.getFaceFeatureInfo(getApplicationContext(),faceinfoString);

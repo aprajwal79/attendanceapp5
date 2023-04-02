@@ -5,9 +5,11 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
 
 import androidx.annotation.NonNull;
 
+import com.bumptech.glide.load.resource.bitmap.BitmapEncoder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -16,6 +18,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.nitap.attende.models.MyConfiguration;
 import com.nitap.attende.models.Student;
 import com.nitap.attende.models.StudentConfiguration;
 import com.nitap.attende.models.TeacherConfiguration;
@@ -292,6 +295,66 @@ public class MyUtils {
         else  { return teacherConfiguration; }
     }
 
+
+    public static Bitmap getBitmap(Context applicationContext, String bitmapString) {
+        ObjectMapper mapper = new ObjectMapper();
+        Bitmap bitmap = null;
+        try {
+            bitmap = mapper.readValue(bitmapString, Bitmap.class);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if (bitmap == null){ return null; }
+        else  { return bitmap; }
+    }
+    
+    public static MyConfiguration getConfiguration(Context context) {
+        ObjectMapper mapper = new ObjectMapper();
+        MyConfiguration myConfiguration = new MyConfiguration();
+        try {
+            String jsonString = MyUtils.getString(context,"MYCONFIG");
+            if (Objects.equals(jsonString, "EMPTY"))
+                return null;
+            myConfiguration = mapper.readValue(jsonString, MyConfiguration.class);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if (myConfiguration == null){ return null; }
+        else  { return myConfiguration; }
+    }
+
+    public static MyConfiguration getConfigurationBuilder(Context context) {
+        ObjectMapper mapper = new ObjectMapper();
+        MyConfiguration myConfigurationBuilder = new MyConfiguration();
+        try {
+            String jsonString = MyUtils.getString(context,"MYCONFIGBUILDER");
+            if (Objects.equals(jsonString, "EMPTY"))
+                return null;
+            myConfigurationBuilder = mapper.readValue(jsonString, MyConfiguration.class);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if (myConfigurationBuilder == null){ return null; }
+        else  { return myConfigurationBuilder; }
+    }
+
+    public static void saveConfiguration(Context context,MyConfiguration myConfiguration) {
+        String updatedString = MyUtils.getStringFromObject(myConfiguration);
+        MyUtils.saveString(context,"MYCONFIG",updatedString);
+    }
+
+    public static void saveConfigurationBuilder(Context context,MyConfiguration myConfiguration) {
+        String updatedString = MyUtils.getStringFromObject(myConfiguration);
+        MyUtils.saveString(context,"MYCONFIGBUILDER",updatedString);
+    }
+
+    public static void removeConfiguration(Context context) {
+        MyUtils.removeString(context,"MYCONFIG");
+    }
+
+    public static void removeConfigurationBuilder(Context context) {
+        MyUtils.removeString(context,"MYCONFIGBUILDER");
+    }
 
 }
 

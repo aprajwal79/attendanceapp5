@@ -20,8 +20,8 @@ public class MainActivity extends AppCompatActivity {
     public static FaceEngine faceEngine;
     public static int check;
 
-    private Context mycontext;
-    private DBHelper mydb;
+    //private Context mycontext;
+    public static DBHelper mydb;
     public static ArrayList userLists;
 
 
