@@ -1,10 +1,6 @@
 package com.nitap.attende;
 
 import android.annotation.SuppressLint;
-<<<<<<< HEAD
-import android.content.Intent;
-import android.os.Bundle;
-=======
 import android.app.DownloadManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -14,7 +10,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.widget.Button;
->>>>>>> f5dd250ddbf31052e32f4d1ca97c88e1851a057a
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
@@ -41,13 +36,6 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-<<<<<<< HEAD
-import com.nitap.attende.pages.AttendanceActivity;
-import com.nitap.attende.pages.HomeActivity;
-import com.nitap.attende.pages.TakeAttendance;
-import com.ttv.facerecog.R;
-
-=======
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.nitap.attende.models.MyConfiguration;
@@ -64,7 +52,6 @@ import com.ttv.facerecog.DBHelper;
 import com.ttv.facerecog.R;
 
 import java.util.ArrayList;
->>>>>>> f5dd250ddbf31052e32f4d1ca97c88e1851a057a
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -83,10 +70,6 @@ public class LoginActivity extends AppCompatActivity {
     Set<String> sections = new ArraySet<String>();
     Set<String> teacherEmailIds = new LinkedHashSet<String>() { };
     Set<String> adminEmailIds = new LinkedHashSet<String>() { };
-<<<<<<< HEAD
-    String rollno, sectionCode;
-
-=======
     static String rollno, sectionCode;
     static Student student;
     static Section section;
@@ -103,18 +86,13 @@ public class LoginActivity extends AppCompatActivity {
     public static String myRollno;
     public static boolean shouldTrain = false;
     public static boolean isEnabled = false;
->>>>>>> f5dd250ddbf31052e32f4d1ca97c88e1851a057a
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-<<<<<<< HEAD
-
-=======
         hasLeft = false;
         MyUtils.removeConfigurationBuilder(this);
->>>>>>> f5dd250ddbf31052e32f4d1ca97c88e1851a057a
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.web_client_id))
                 .requestEmail()
@@ -129,7 +107,7 @@ public class LoginActivity extends AppCompatActivity {
             isEnabled = false;
         }
 
-        LinearLayout signInButton  = findViewById(R.id.google_btn);
+        signInButton = findViewById(R.id.google_btn);
 
         signInButton.setOnClickListener(v -> {
             if(isEnabled) {
@@ -148,18 +126,14 @@ public class LoginActivity extends AppCompatActivity {
         super.onStart();
         // Check if user is signed in (non-null) and update UI accordingly.
         FirebaseUser currentUser = mAuth.getCurrentUser();
-<<<<<<< HEAD
-        updateUI(currentUser);
-=======
         if (currentUser != null) {
             updateUI(currentUser);
         }
 
->>>>>>> f5dd250ddbf31052e32f4d1ca97c88e1851a057a
     }
 
     private void signIn() {
-        signOut();
+        signOut(getApplicationContext());
         Intent signInIntent = mGoogleSignInClient.getSignInIntent();
         startActivityForResult(signInIntent, RC_SIGN_IN);
     }
@@ -168,7 +142,7 @@ public class LoginActivity extends AppCompatActivity {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
 
         super.onActivityResult(requestCode, resultCode, data);
-        // Result returned from launching the Intent from GoogleSignInClient.getSignInIntent(...);
+
 
         if (requestCode == RC_SIGN_IN && mAuth.getCurrentUser()==null)  {
             Toast.makeText(getApplicationContext(), "Got Google account", Toast.LENGTH_SHORT).show();
@@ -192,6 +166,8 @@ public class LoginActivity extends AppCompatActivity {
             }
         }
 
+
+
     }
 
     private void firebaseAuthWithGoogle(String idToken) {
@@ -201,6 +177,7 @@ public class LoginActivity extends AppCompatActivity {
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
+
                         if (task.isSuccessful()) {
                             // Sign in success, update UI with the signed-in user's information
                             FirebaseUser user = mAuth.getCurrentUser();
@@ -212,6 +189,7 @@ public class LoginActivity extends AppCompatActivity {
                             //updateUI(null);
                             isEnabled = true;
                         }
+
                     }
                 });
     }
@@ -224,30 +202,14 @@ public class LoginActivity extends AppCompatActivity {
            return;
        }
 
-<<<<<<< HEAD
-       startActivity(new Intent(LoginActivity.this, AttendanceActivity.class));
-       finish();
-
-
-        //Toast.makeText(this, "UPDATE UI CA
-        // LLED", Toast.LENGTH_SHORT).show();
-        // FirebaseUser currentUser = mAuth.getCurrentUser();
-=======
        /*
->>>>>>> f5dd250ddbf31052e32f4d1ca97c88e1851a057a
         if (currentUser!=null) {
             String email = currentUser.getEmail();
+           // Toast.makeText(this, "EMAIL: "+email, Toast.LENGTH_SHORT).show();
             String[] contents = Objects.requireNonNull(email).split("@");
+           // Toast.makeText(this, contents[0]+"$"+contents[1], Toast.LENGTH_SHORT).show();
             if (contents.length == 2 && Objects.equals(contents[1], "student.nitandhra.ac.in")) {
                 // USERTYPE STUDENT
-<<<<<<< HEAD
-                if (!Objects.equals(MyUtils.getString(this, "STUDENT"), "EMPTY")) {
-                    MyUtils.saveString(this,"USERTYPE","STUDENT");
-                    MyUtils.saveString(this,"EMAIL",email);
-                    MyUtils.saveString(getApplicationContext(),"NAME", Objects.requireNonNull(mAuth.getCurrentUser()).getDisplayName());
-                    MyUtils.removeString(this,"TEACHER");
-                    MyUtils.removeString(this,"ADMIN");
-=======
                 if (MyUtils.getConfiguration(this).student!=null) {
                     MyUtils.removeString(this,"TEACHERCONFIG");
                     MyUtils.removeString(this,"ADMINCONFIG");
@@ -259,35 +221,38 @@ public class LoginActivity extends AppCompatActivity {
                     MyUtils.removeString(this,"NAME");
                     assert MyUtils.getStudentConfiguration(getApplicationContext()).student.email!=null;
 
->>>>>>> f5dd250ddbf31052e32f4d1ca97c88e1851a057a
                     hasLeft = true;
                     startActivity(new Intent(this,HomeActivity.class));
                     finish();
                 } else {
+
+
+                    MyUtils.removeAll(getApplicationContext());
+                    StudentConfiguration firstStudentConfig = new StudentConfiguration();
+                    String updatedStudentConfig = MyUtils.getStringFromObject(firstStudentConfig);
+                    MyUtils.saveString(getApplicationContext(),"STUDENTCONFIGBUILDER",updatedStudentConfig);
                     rollno = contents[0];
                     sectionCode = rollno.substring(0,4);
-                    checkIfSectionExists(rollno);
+                    assert MyUtils.getStudentConfigurationBuilder(getApplicationContext())!=null;
+                    checkIfStudentExists(rollno);
                     //Toast.makeText(getApplicationContext(), "sectionCode " +sectionCode, Toast.LENGTH_SHORT).show();
 
                 }
 
             } else{
                 // USERTYPE FACULTY AND ADMIN
-                if (!Objects.equals(MyUtils.getString(this, "TEACHER"), "EMPTY")) {
-                    MyUtils.saveString(this,"USERTYPE","TEACHER");
-                    MyUtils.saveString(this,"EMAIL",email);
-                    MyUtils.saveString(getApplicationContext(),"NAME", Objects.requireNonNull(mAuth.getCurrentUser()).getDisplayName());
-                    MyUtils.removeString(this,"STUDENT");
-                    MyUtils.removeString(this,"ADMIN");
+                MyUtils.removeString(this,"STUDENTCONFIG");
+                MyUtils.removeString(this,"STUDENTCONFIGBUILDER");
+                MyUtils.removeString(this,"TEACHERCONFIGBUILDER");
+                MyUtils.removeString(this,"ADMINCONFIGBUILDER");
+
+                if (!Objects.equals(MyUtils.getString(this, "TEACHERCONFIG"), "EMPTY")) {
+                    MyUtils.removeString(this,"ADMINCONFIG");
                     hasLeft = true;
                     startActivity(new Intent(this,HomeActivity.class));
                     finish();
-                } else if (!Objects.equals(MyUtils.getString(this, "ADMIN"), "EMPTY")) {
-                    MyUtils.saveString(this,"USERTYPE","ADMIN");
-                    MyUtils.saveString(this,"EMAIL",email);
-                    MyUtils.saveString(getApplicationContext(),"NAME", Objects.requireNonNull(mAuth.getCurrentUser()).getDisplayName());
-                    MyUtils.removeString(this,"STUDENT");
-                    MyUtils.removeString(this,"TEACHER");
+                } else if (!Objects.equals(MyUtils.getString(this, "ADMINCONFIG"), "EMPTY")) {
+                    MyUtils.removeString(this,"TEACHERCONFIG");
                     hasLeft = true;
                     startActivity(new Intent(this,HomeActivity.class));
                     finish();
@@ -297,6 +262,7 @@ public class LoginActivity extends AppCompatActivity {
                     getTeacherEmailIds();
                     getAdminEmailIds();
 
+                    /*
                     if (teacherEmailIds.contains(email)) {
                         MyUtils.saveString(this,"USERTYPE","TEACHER");
                         MyUtils.saveString(this,"EMAIL",email);
@@ -317,10 +283,7 @@ public class LoginActivity extends AppCompatActivity {
                         // mAuth.signOut();
                         Toast.makeText(this, "Account Unauthorised, Try Again", Toast.LENGTH_SHORT).show();
                     }
-<<<<<<< HEAD
-=======
 
->>>>>>> f5dd250ddbf31052e32f4d1ca97c88e1851a057a
 
 
                 }
@@ -375,18 +338,29 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void checkIfUserIsTeacher(String email) {
-        DatabaseReference courseRef = FirebaseDatabase.getInstance().getReference().child("OBJECTS").child("TEACHERS").child(email);
+        String teacherId = email.replace(".","?");
+        DatabaseReference courseRef = FirebaseDatabase.getInstance().getReference().child("teachers").child(teacherId);
         courseRef.addValueEventListener(new ValueEventListener() {
             @SuppressLint("NewApi")
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
+
                 if (snapshot.exists()) {
                     //TODO:  Now teacher exists, download teacher object and save jsonString
-
+                    Teacher teacher = snapshot.getValue(Teacher.class);
+                    TeacherConfiguration tConfig = new TeacherConfiguration();
+                    tConfig.teacher= teacher;
+                    String tString = MyUtils.getStringFromObject(tConfig);
+                    MyUtils.removeAll(getApplicationContext());
+                    MyUtils.saveString(getApplicationContext(),"TEACHERCONFIG",tString);
+                    assert MyUtils.getTeacherConfiguration(getApplicationContext())!=null;
+                    hasLeft = true;
+                    startActivity(new Intent(getApplicationContext(),TeacherDashboardActivity.class));
+                    finish();
                 } else {
                    checkIfUserIsAdmin(email);
                 }
-
+                courseRef.removeEventListener(this);
             }
 
             @Override
@@ -415,7 +389,7 @@ public class LoginActivity extends AppCompatActivity {
                 } else {
                     Toast.makeText(getApplicationContext(), "Account not authorised, try again", Toast.LENGTH_SHORT).show();
                 }
-
+                courseRef.removeEventListener(this);
             }
 
             @Override
@@ -426,27 +400,16 @@ public class LoginActivity extends AppCompatActivity {
 
     }
 
-<<<<<<< HEAD
-    private void checkIfSectionExists(String rollno) {
-        String sectionCode = rollno.substring(0,4);
-        DatabaseReference courseRef = FirebaseDatabase.getInstance().getReference().child("SECTIONS").child(sectionCode);
-=======
     private void checkIfSectionExists() {
         String sectionId = mAuth.getCurrentUser().getEmail().split("@")[0].substring(0,4);
         Toast.makeText(this,"sec id " + sectionId, Toast.LENGTH_SHORT).show();
         DatabaseReference courseRef = FirebaseDatabase.getInstance().getReference().child("sections").child(sectionId);
->>>>>>> f5dd250ddbf31052e32f4d1ca97c88e1851a057a
         courseRef.addValueEventListener(new ValueEventListener() {
+
             @SuppressLint("NewApi")
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.exists()) {
-<<<<<<< HEAD
-                    // Now section exists, hence check if student is already registered in the section
-                    checkIfStudentExists(rollno);
-                } else {
-                    Toast.makeText(LoginActivity.this, "Section not found, contact admin", Toast.LENGTH_SHORT).show();
-=======
                     Toast.makeText(getApplicationContext(), "section exists", Toast.LENGTH_SHORT).show();
                     // TODO: Now section details exist, hence get section details, then class details and redirect to photo upload
                     Section section = snapshot.getValue(Section.class);
@@ -470,9 +433,8 @@ public class LoginActivity extends AppCompatActivity {
                     // TODO: Now section details not found, display error
                    Toast.makeText(getApplicationContext(), "Section not found, contact admin", Toast.LENGTH_SHORT).show();
 
->>>>>>> f5dd250ddbf31052e32f4d1ca97c88e1851a057a
                 }
-
+                courseRef.removeEventListener(this);
             }
 
             @Override
@@ -483,9 +445,6 @@ public class LoginActivity extends AppCompatActivity {
 
     }
 
-<<<<<<< HEAD
-    private void checkIfStudentExists(String rollno) {
-=======
     private void checkIfClassExists() {
         MyConfiguration myConfiguration = MyUtils.getConfigurationBuilder(this);
         String classId = myConfiguration.student.classId;
@@ -888,30 +847,13 @@ public class LoginActivity extends AppCompatActivity {
     private void checkIfStudentExists() {
         String[] contents = mAuth.getCurrentUser().getEmail().split("@");
         String rollno = contents[0];
->>>>>>> f5dd250ddbf31052e32f4d1ca97c88e1851a057a
         DatabaseReference courseRef = FirebaseDatabase.getInstance().getReference().child("students").child(rollno);
         courseRef.addValueEventListener(new ValueEventListener() {
             @SuppressLint("NewApi")
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
+
                 if (snapshot.exists()) {
-<<<<<<< HEAD
-                    // TODO: Now student details already exist, hence get jsonString and store it;
-                    String jsonString = snapshot.getValue(String.class);
-                    MyUtils.saveString(getApplicationContext(),"USERTYPE","STUDENT");
-                    MyUtils.saveString(getApplicationContext(),"EMAIL",email);
-                    MyUtils.saveString(getApplicationContext(),"STUDENT",jsonString);
-                    hasLeft=true;
-                    startActivity(new Intent(getApplicationContext(),HomeActivity.class));
-                    finish();
-                } else {
-                    // TODO: Now student credentials are not found, ask for credentials and upload, also save jsonString
-                    MyUtils.saveString(getApplicationContext(),"USERTYPE","STUDENT");
-                    MyUtils.saveString(getApplicationContext(),"EMAIL",email);
-                    hasLeft=true;
-                    startActivity(new Intent(getApplicationContext(),FaceRecognitionActivity.class));
-                    finish();
-=======
 
                     //TODO: Now student details already exist, hence get student object and store it;
                     MyStudent student = snapshot.getValue(MyStudent.class);
@@ -935,9 +877,8 @@ public class LoginActivity extends AppCompatActivity {
                 } else {
                     //TODO: Now student credentials are not found, ask for credentials and upload, also save jsonString
                     checkIfSectionExists();
->>>>>>> f5dd250ddbf31052e32f4d1ca97c88e1851a057a
                 }
-
+                courseRef.removeEventListener(this);
             }
 
             @Override
@@ -1029,7 +970,7 @@ public class LoginActivity extends AppCompatActivity {
                     }
                 });
                 */
-
+                courseRef.removeEventListener(this);
             }
 
             @Override
@@ -1066,6 +1007,7 @@ public class LoginActivity extends AppCompatActivity {
                         finish();
                     }
                 });
+                courseRef.removeEventListener(this);
             }
 
             @Override
@@ -1075,8 +1017,6 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
-
-
     private void getAdminEmailIds() {
         DatabaseReference courseRef = FirebaseDatabase.getInstance().getReference().child("OBJECTS").child("TEACHERS");
         courseRef.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -1085,7 +1025,7 @@ public class LoginActivity extends AppCompatActivity {
                 for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
                     teacherEmailIds.add(Objects.requireNonNull(dataSnapshot.getKey()).replace("?","."));
                 }
-
+                courseRef.removeEventListener(this);
             }
 
             @Override
@@ -1096,22 +1036,18 @@ public class LoginActivity extends AppCompatActivity {
         // Toast.makeText(this, Arrays.toString(teacherEmailIds.toArray()), Toast.LENGTH_SHORT).show();
     }
 
-
-    void signOut() {
+    public static void signOut(Context context) {
         FirebaseAuth userAuth;
         GoogleSignInClient mGoogleSigninClient;
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(getString(R.string.web_client_id))
+                .requestIdToken(context.getString(R.string.web_client_id))
                 .requestEmail()
                 .build();
-        mGoogleSigninClient = GoogleSignIn.getClient(this, gso);
-        //userAuth.getInstance().signOut();
+        mGoogleSigninClient = GoogleSignIn.getClient(context, gso);
         FirebaseAuth.getInstance().signOut();
         mGoogleSigninClient.signOut();
     }
 
-<<<<<<< HEAD
-=======
     void display(String msg) {
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
     }
@@ -1128,5 +1064,4 @@ public class LoginActivity extends AppCompatActivity {
 
 
 
->>>>>>> f5dd250ddbf31052e32f4d1ca97c88e1851a057a
 }
