@@ -1,6 +1,6 @@
 package com.nitap.attende.models;
 
-import com.nitap.attende.model.Student;
+//import com.nitap.attende.model.Student;
 
 public class StudentConfiguration {
     public Student student;

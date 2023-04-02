@@ -71,5 +71,23 @@
         android:layout_height="wrap_content"
         android:text="Delete Teacher" />
 
+    <Button
+        android:id="@+id/button10"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Add Admin" />
+
+    <Button
+        android:id="@+id/button11"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Modify Admin" />
+
+    <Button
+        android:id="@+id/button12"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Delete Admin" />
+
   </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

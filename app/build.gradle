@@ -85,6 +85,6 @@ dependencies {
 
     implementation 'com.squareup.retrofit2:converter-jackson:2.2.0'
     implementation 'com.google.code.gson:gson:2.8.5'
-
+    implementation 'com.google.firebase:firebase-storage'
 
 }

@@ -42,9 +42,18 @@ uses-permission android:name="android.permission.BLUETOOTH_PRIVILEGED" />
     android:label="NIT AP ATTENDANCE"
     android:roundIcon="@mipmap/nitap"
     android:supportsRtl="true"
+<<<<<<< HEAD
     android:theme="@style/Theme.TTVFaceRecog"
     android:requestLegacyExternalStorage="true">
 
+=======
+    android:theme="@style/Theme.TTVFaceRecog">
+    <activity
+        android:name="com.nitap.attende.AddTeacherActivity"
+        android:exported="false"
+
+        />
+>>>>>>> f5dd250ddbf31052e32f4d1ca97c88e1851a057a
     <activity
         android:name=".MainActivity"
         android:exported="true">
@@ -57,8 +66,17 @@ uses-permission android:name="android.permission.BLUETOOTH_PRIVILEGED" />
 
 
     </activity>
+<<<<<<< HEAD
 
     <activity android:name="com.nitap.attende.AdminActivity" android:exported="true"/>
+=======
+    <activity
+        android:name="com.nitap.attende.pages.ViewStudentProfileActivity"
+        android:exported="false" />
+    <activity
+        android:name="com.nitap.attende.AdminActivity"
+        android:exported="true" />
+>>>>>>> f5dd250ddbf31052e32f4d1ca97c88e1851a057a
     <activity
         android:name="com.nitap.attende.FaceRecognitionActivity"
         android:exported="true" />
@@ -105,6 +123,11 @@ uses-permission android:name="android.permission.BLUETOOTH_PRIVILEGED" />
 
 
     <activity
+        android:name="com.nitap.attende.ReUploadActivity"
+        android:exported="false"
+
+        />
+    <activity
         android:name="com.nitap.attende.pages.HomeActivity"
         android:exported="true">
         <meta-data
@@ -122,7 +145,23 @@ uses-permission android:name="android.permission.BLUETOOTH_PRIVILEGED" />
             android:name="android.app.lib_name"
             android:value="" />
     </activity>
+<<<<<<< HEAD
 
 
+=======
+    <activity
+        android:name="com.nitap.attende.AddClassActivity"
+        android:exported="false" />
+    <activity
+        android:name="com.nitap.attende.AddSectionActivity"
+        android:exported="false" />
+    <activity
+        android:name="com.nitap.attende.TeacherDashboardActivity"
+        android:exported="false" />
+    <activity
+        android:name="com.nitap.attende.MainActivity2"
+        android:exported="true" />
+
+>>>>>>> f5dd250ddbf31052e32f4d1ca97c88e1851a057a
 </application>
 </manifest>
